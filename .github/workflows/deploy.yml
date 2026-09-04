@@ -24,7 +24,9 @@ jobs:
             set -e
             cd ~/dev/bet-sefer/backend
 
-            echo "→ Pulling main"
+            echo "→ Fetching and switching to main"
+            git fetch origin
+            git checkout main
             git pull origin main
 
             echo "→ Stopping current stack"
@@ -35,6 +37,12 @@ jobs:
 
             echo "→ Running migrations (fail-closed)"
             docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+
+            echo "→ Seeding demo data on first provisioning only"
+            USERS=$(docker compose -f docker-compose.prod.yml exec -T app php artisan tinker --execute="echo \App\Models\User::count();")
+            if [ "$USERS" = "0" ]; then
+                docker compose -f docker-compose.prod.yml exec -T app php artisan db:seed --force
+            fi
 
             echo "→ Caching config"
             docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
