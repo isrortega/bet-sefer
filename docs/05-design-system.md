@@ -91,10 +91,10 @@ Front desk                           Edition detail
 │  │ ▏                      │  │    │        │ ISBN             (mono)│
 │  └────────────────────────┘  │    ├────────┴────────────────────────┤
 ├──────────────────────────────┤    │ Copies                          │
-│ ▸ Reader   Ana Ríos    active│    │ BS-4F7K2Q9  Available  A-3-12   │
-│ ▸ Copy     Dune        avail.│    │ BS-9X2M4R1  On loan    due 14th │
-│                              │    │ BS-7T5N8W3  In transit          │
-│      [ Check out — 14 days ] │    └─────────────────────────────────┘
+│ ▸ Reader   Ana Ríos    active│    │ BS-4F7K2Q91  Available  A-3-12  │
+│ ▸ Copy     Dune        avail.│    │ BS-9X2M4R1W  On loan    due 14th│
+│                              │    │ BS-7T5N8W3K  In transit         │
+│      [ Check out · 240 h ]   │    └─────────────────────────────────┘
 └──────────────────────────────┘
 ```
 

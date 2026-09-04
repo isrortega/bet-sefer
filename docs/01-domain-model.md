@@ -20,6 +20,27 @@ has a status. There is deliberately **no `works` table**.
 - Soft deletes on `users`, `editions`, `copies`.
 - All money as `numeric(10,2)`, all durations as integer **hours**.
 
+## Codes
+
+One generator (`App\Support\CrockfordCode`), three prefixes:
+
+- Copy code: `BS-` + 8 Crockford chars.
+- Member code: 8 Crockford chars, no prefix.
+- Loan receipt code: `LN-` + 8 Crockford chars.
+
+Each code is **7 random characters + 1 check digit**, drawn from the Crockford
+base32 alphabet `0123456789ABCDEFGHJKMNPQRSTVWXYZ` (which excludes I, L, O and U
+so it survives handwriting and OCR). The check digit is
+
+```
+Σ(value_i × weight_i) mod 32   with weights alternating 1, 3 (1 for the first char)
+```
+
+mapped back to a Crockford symbol. Examples: `BS-4F7K2Q91`, `LN-4F7K2Q91`.
+Codes are **random, never sequential** — sequential codes would let anyone
+enumerate the collection. Uniqueness is always enforced by the database on the
+full code (copy `code`, `users.member_code`, `loans.code`).
+
 ---
 
 ## Block 1 — Identity
@@ -36,7 +57,7 @@ has a status. There is deliberately **no `works` table**.
 | `google_id` | varchar(64) null | unique |
 | `avatar_url` | varchar null | |
 | `status` | varchar(24) | `pending_email` \| `pending_identity` \| `active` \| `suspended` |
-| `member_code` | varchar(16) | unique. Base32 + check digit. Drives the member QR |
+| `member_code` | varchar(16) | unique. 8-char Crockford base32 + check digit (same generator as copy codes, no prefix). Drives the member QR |
 | `document_type` | varchar(16) null | `CC` \| `CE` \| `passport` |
 | `document_number` | text null | **encrypted cast** |
 | `document_hash` | char(64) null | unique. HMAC-SHA256 of normalised document number with `APP_KEY`. Enables lookup and uniqueness over an encrypted value |
@@ -94,7 +115,7 @@ is `WHERE path LIKE '/1/7/%'`.
 | `format` | varchar(24) | `hardcover` \| `paperback` \| `spiral` \| `magazine` \| `other` |
 | `height_mm`, `width_mm`, `depth_mm` | smallint null | |
 | `summary` | text null | |
-| `cover_path` | varchar null | key in R2 |
+| `cover_path` | varchar null | key on the local `public` disk (R2 in a later phase) |
 | `cover_source` | varchar(32) null | |
 | `loan_type` | varchar(24) | `general` \| `reference` \| `periodical` |
 | `special_material` | boolean | default false. **Edition level only** |
@@ -135,7 +156,7 @@ Same tree pattern as `categories`.
 | Column | Type | Notes |
 |---|---|---|
 | `id`, `ulid` | | |
-| `code` | varchar(16) | unique. Format `BS-4F7K2Q9`, Crockford base32 + check digit. This is what the QR encodes |
+| `code` | varchar(16) | unique. `BS-` + 8 Crockford chars (7 random + 1 check digit). This is what the QR encodes |
 | `edition_id` | bigint | FK, `restrictOnDelete` |
 | `location_id` | bigint null | FK, nullOnDelete |
 | `status` | varchar(24) | see state machine |
@@ -186,7 +207,7 @@ Seeded values:
 
 | Column | Type | Notes |
 |---|---|---|
-| `id`, `ulid`, `code` | | `code` unique, receipt number |
+| `id`, `ulid`, `code` | | `code` unique, receipt number, format `LN-` + 8 Crockford chars |
 | `copy_id` | bigint | FK restrict |
 | `user_id` | bigint | FK restrict — the reader |
 | `checked_out_by_id` | bigint | FK — the librarian |
@@ -219,7 +240,7 @@ Indexes: `(user_id, returned_at)`, `(due_at) WHERE returned_at IS NULL`.
 Recurring rows match on month+day regardless of year.
 
 ### `library_hours`
-`id`, `weekday` smallint 0–6 unique, `opens_at` time null, `closes_at` time null,
+`id`, `weekday` smallint 0–6 unique (0 = Monday), `opens_at` time null, `closes_at` time null,
 `is_closed` boolean.
 
 ---

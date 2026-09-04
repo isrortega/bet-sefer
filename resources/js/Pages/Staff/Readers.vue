@@ -1,0 +1,100 @@
+<script setup>
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import StatusChip from '../../Components/StatusChip.vue';
+import { useTrans } from '../../i18n';
+
+const { t } = useTrans();
+const props = defineProps({
+    readers: Object,
+    canVerify: Boolean,
+});
+
+const page = usePage();
+const flash = computed(() => page.props.flash ?? {});
+const q = new URLSearchParams(window.location.search).get('q') ?? '';
+</script>
+
+<template>
+    <div class="min-h-screen bg-shelf">
+        <header class="border-b border-rule bg-paper px-4 py-3">
+            <div class="mx-auto flex max-w-5xl items-center justify-between">
+                <span class="font-serif text-lg font-medium text-ink">Bet-Sefer · Staff</span>
+                <a href="/account" class="text-sm text-ink-muted hover:text-ink">{{ t('nav.my_account') }}</a>
+            </div>
+        </header>
+
+        <main class="mx-auto max-w-5xl px-4 py-8">
+            <div class="flex items-center justify-between gap-4">
+                <h1 class="text-[25px] font-medium text-ink">{{ t('readers.title') }}</h1>
+                <form method="get" action="/staff/readers" class="flex gap-2">
+                    <input name="q" :value="q" :placeholder="t('readers.search_ph')"
+                           class="rounded-md border border-rule bg-paper px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brass" />
+                    <button type="submit" class="rounded-md bg-buckram px-3 py-2 text-sm font-medium text-paper">{{ t('readers.search') }}</button>
+                </form>
+            </div>
+
+            <div v-if="flash.message || flash.error" class="mb-4 mt-4 rounded-md border px-3 py-2 text-sm"
+                 :class="flash.error ? 'border-lost-bg bg-lost-bg text-lost' : 'border-available-bg bg-available-bg text-available'">
+                {{ flash.error || flash.message }}
+            </div>
+
+            <div class="mt-4 overflow-hidden rounded-[10px] border border-rule bg-paper">
+                <table class="w-full text-left text-sm">
+                    <thead class="border-b border-rule text-ink-muted">
+                        <tr>
+                            <th class="px-4 py-2 font-medium">{{ t('readers.reader') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ t('readers.member') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ t('common.status') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ t('readers.roles') }}</th>
+                            <th class="px-4 py-2 text-right font-medium">{{ t('readers.actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="reader in readers.data" :key="reader.ulid" class="border-b border-rule last:border-0">
+                            <td class="px-4 py-3">
+                                <p class="text-ink">{{ reader.name }}</p>
+                                <p class="text-xs text-ink-muted">{{ reader.email }}</p>
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs text-ink-muted">{{ reader.member_code }}</td>
+                            <td class="px-4 py-3">
+                                <StatusChip :status="reader.deleted ? 'deleted' : reader.status" />
+                            </td>
+                            <td class="px-4 py-3 text-xs text-ink-muted">{{ reader.roles.join(', ') }}</td>
+                            <td class="px-4 py-3">
+                                <div v-if="reader.deleted">
+                                    <form method="post" :action="`/staff/readers/${reader.ulid}/restore`">
+                                        <input type="hidden" name="_token" :value="page.props.csrf_token" />
+                                        <button class="text-sm font-medium text-buckram hover:underline">{{ t('readers.reopen') }}</button>
+                                    </form>
+                                </div>
+                                <form v-else-if="canVerify && !reader.verified_at && reader.roles.includes('reader')"
+                                      method="post" :action="`/staff/readers/${reader.ulid}/verify`" class="flex flex-wrap items-center justify-end gap-1">
+                                    <input type="hidden" name="_token" :value="page.props.csrf_token" />
+                                    <select name="document_type" class="rounded border border-rule px-1.5 py-1 text-xs">
+                                        <option value="CC">CC</option>
+                                        <option value="CE">CE</option>
+                                        <option value="passport">{{ t('readers.passport') }}</option>
+                                    </select>
+                                    <input name="document_number" required :placeholder="t('readers.id_number')"
+                                           class="rounded border border-rule px-2 py-1 text-xs" />
+                                    <button class="rounded bg-buckram px-2 py-1 text-xs font-medium text-paper">{{ t('readers.verify') }}</button>
+                                </form>
+                                <span v-else class="text-xs text-ink-subtle">—</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div v-if="readers.links && readers.links.length > 3" class="mt-4 flex gap-2 text-sm">
+                <template v-for="link in readers.links" :key="link.label">
+                    <span v-if="link.url" class="rounded border border-rule bg-paper px-2 py-1 text-buckram">
+                        <a v-html="link.label" :href="link.url"></a>
+                    </span>
+                    <span v-else class="rounded border border-rule px-2 py-1 text-ink-subtle" v-html="link.label"></span>
+                </template>
+            </div>
+        </main>
+    </div>
+</template>

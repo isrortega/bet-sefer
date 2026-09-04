@@ -92,6 +92,24 @@ is why it must not sit in front of a librarian waiting at the desk.
 
 The one AI feature in scope. It suggests, it never decides.
 
+Provider: **OpenRouter** (`POST https://openrouter.ai/api/v1/chat/completions`).
+The model is configurable and defaults to `deepseek/deepseek-v4-flash`:
+
+```dotenv
+OPENROUTER_API_KEY=
+AI_MODEL=deepseek/deepseek-v4-flash
+AI_TIMEOUT=6
+AI_CLASSIFICATION_ENABLED=true
+```
+
+- Enabled only when `OPENROUTER_API_KEY` is set and `AI_CLASSIFICATION_ENABLED`
+  is true; otherwise the suggestion step is skipped silently and the manual form
+  still works.
+- Request uses JSON mode (`response_format: { type: 'json_object' }`); a missing
+  key, timeout (6s) or invalid JSON is treated as "no suggestion".
+- `ai_model` on the edition stores the model string from the env, so it is
+  auditable later.
+
 `App\Services\Classification\ClassifySuggestedTaxonomy`
 
 Input: title, subtitle, summary, publisher, subject strings from providers, plus
