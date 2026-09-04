@@ -246,5 +246,6 @@
     "nav.roles": "Roles",
     "nav.categories": "Categories",
     "nav.locations": "Locations",
-    "nav.policies": "Policies"
+    "nav.policies": "Policies",
+    "admin.delete": "Delete"
 }

@@ -68,10 +68,10 @@ const firstError = computed(() => Object.values(errors.value).flat()[0] ?? null)
                         {{ l.children_count }} {{ t('admin.children_first') }}
                     </div>
                     <form v-else method="post" :action="`/staff/locations/${l.id}`" class="mt-1 pl-10"
-                          @submit.prevent="confirm(t('admin.deleted')+'?') && $event.target.submit()">
+                          @submit.prevent="confirm(t('admin.delete')+'?') && $event.target.submit()">
                         <input type="hidden" name="_token" :value="page.props.csrf_token" />
                         <input type="hidden" name="_method" value="DELETE" />
-                        <button class="text-xs font-medium text-lost hover:underline">{{ t('admin.deleted') }}</button>
+                        <button class="text-xs font-medium text-lost hover:underline">{{ t('admin.delete') }}</button>
                     </form>
                 </li>
             </ul>
