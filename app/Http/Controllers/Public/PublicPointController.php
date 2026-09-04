@@ -66,17 +66,18 @@ class PublicPointController extends Controller
         return $this->render('Public/Edition', $payload, $request, $edition);
     }
 
-    public function suggest(Request $request): RedirectResponse
+    public function suggest(Request $request, PublicIsbnLookupService $lookupService): RedirectResponse
     {
         $isbn = preg_replace('/[^0-9Xx]/', '', (string) $request->input('isbn', ''));
 
         if ($isbn === '' || strlen($isbn) < 10) {
-            return back()->with('error', 'Enter a valid ISBN.');
+            return back()->with('error', __('public.suggestion_bad_isbn'));
         }
 
-        $this->record($request, 'acquisition_suggestion', null, $isbn);
+        $metadata = $this->externalPayload($lookupService->lookup($isbn));
+        $this->record($request, 'acquisition_suggestion', null, $isbn, $metadata);
 
-        return back()->with('message', 'Thanks — your suggestion has been recorded.');
+        return back()->with('message', __('public.suggestion_thanks'));
     }
 
     /**
@@ -120,7 +121,10 @@ class PublicPointController extends Controller
         ];
     }
 
-    private function record(Request $request, string $type, ?int $editionId, ?string $isbn): void
+    /**
+     * @param  array<string, mixed>|null  $metadata
+     */
+    private function record(Request $request, string $type, ?int $editionId, ?string $isbn, ?array $metadata = null): void
     {
         DemandEvent::create([
             'type' => $type,
@@ -129,6 +133,7 @@ class PublicPointController extends Controller
             'query_text' => $isbn,
             'user_id' => $request->user()?->id,
             'ip_hash' => $request->ip() !== null ? hash('sha256', $request->ip().config('app.key')) : null,
+            'metadata' => $metadata,
             'created_at' => now(),
         ]);
     }

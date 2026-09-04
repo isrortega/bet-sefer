@@ -43,6 +43,7 @@ const flash = computed(() => page.props.flash ?? {});
                 <table class="w-full text-left text-sm">
                     <thead class="border-b border-rule text-ink-muted">
                         <tr>
+                            <th class="px-4 py-2 font-medium">{{ t('demand.book') }}</th>
                             <th class="px-4 py-2 font-medium">{{ t('demand.isbn') }}</th>
                             <th class="px-4 py-2 font-medium">{{ t('demand.when') }}</th>
                             <th class="px-4 py-2 text-right font-medium">{{ t('readers.actions') }}</th>
@@ -50,6 +51,15 @@ const flash = computed(() => page.props.flash ?? {});
                     </thead>
                     <tbody>
                         <tr v-for="s in suggestions.data" :key="s.id" class="border-b border-rule last:border-0">
+                            <td class="px-4 py-3">
+                                <template v-if="s.meta?.title">
+                                    <p class="font-serif text-ink">{{ s.meta.title }}</p>
+                                    <p class="text-xs text-ink-muted">
+                                        {{ (s.meta.authors ?? []).join(', ') }}<template v-if="(s.meta.authors ?? []).length"> · </template>{{ s.meta.publisher }}<template v-if="s.meta.publisher"> · </template>{{ s.meta.published_year }}
+                                    </p>
+                                </template>
+                                <span v-else class="text-xs text-ink-subtle">{{ t('demand.unknown_title') }}</span>
+                            </td>
                             <td class="px-4 py-3 font-mono text-xs text-ink">{{ s.isbn }}</td>
                             <td class="px-4 py-3 text-ink-muted">{{ new Date(s.created_at).toLocaleDateString() }}</td>
                             <td class="px-4 py-3 text-right">

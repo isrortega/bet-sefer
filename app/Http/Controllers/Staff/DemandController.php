@@ -32,6 +32,7 @@ class DemandController extends Controller
                 'isbn' => $event->isbn,
                 'created_at' => $event->created_at?->toIso8601String(),
                 'resolved_at' => $event->resolved_at?->toIso8601String(),
+                'meta' => $event->metadata,
             ]),
             'totals' => $totals,
         ]);
