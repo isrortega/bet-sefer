@@ -34,7 +34,7 @@ down:
 	$(DOCKER) down
 
 perms:
-	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views storage/app/public/covers bootstrap/cache && touch storage/logs/laravel.log && chown -R www-data:www-data storage bootstrap/cache && chmod -R u+rwX,go+rX storage bootstrap/cache' 2>/dev/null || true
+	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views storage/app/public/covers bootstrap/cache && touch storage/logs/laravel.log && chown -R 1000:1000 storage bootstrap/cache && chmod -R a+rwX storage bootstrap/cache' 2>/dev/null || true
 
 fresh: perms
 	$(EXEC) php artisan migrate:fresh --seed
