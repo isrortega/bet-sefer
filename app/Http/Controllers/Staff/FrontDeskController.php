@@ -47,7 +47,7 @@ class FrontDeskController extends Controller
             return back()->withErrors($e->errors())->withInput();
         }
 
-        return back()->with('message', "Checked out — due {$loan->due_at->format('M j')}.");
+        return back()->with('message', __('desk.checked_out', ['date' => $loan->due_at->format('M j')]));
     }
 
     public function checkin(Request $request, ReturnCopyAction $action): RedirectResponse

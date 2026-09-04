@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/literata/400.css";
+@import "@fontsource/literata/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@theme {
+    --color-ink: #14211f;
+    --color-ink-muted: #55625e;
+    --color-ink-subtle: #7c8783;
+
+    --color-buckram: #14543f;
+    --color-buckram-deep: #0f4433;
+    --color-shelf: #f5f6f4;
+    --color-paper: #ffffff;
+    --color-rule: #dfe2dd;
+    --color-brass: #a8761c;
+
+    --color-available: #1e6b4f;
+    --color-available-bg: #e6f1eb;
+    --color-onloan: #3a5199;
+    --color-onloan-bg: #e8ecf8;
+    --color-reception: #8a6212;
+    --color-reception-bg: #faf0dc;
+    --color-transit: #14707a;
+    --color-transit-bg: #e0f0f1;
+    --color-repair: #8c4a1e;
+    --color-repair-bg: #f8eadf;
+    --color-lost: #8a2b3b;
+    --color-lost-bg: #f8e7ea;
+    --color-overdue: #b3261e;
+
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Literata", ui-serif, Georgia, serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+@layer base {
+    html {
+        font-family: var(--font-sans);
+        font-feature-settings: "tnum" 1;
+    }
+
+    body {
+        background-color: var(--color-shelf);
+        color: var(--color-ink);
+    }
+}
