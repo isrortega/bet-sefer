@@ -6,19 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
+            $table->char('ulid', 26)->unique();
+            $table->string('name', 160);
+            $table->string('email', 190)->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
+            $table->string('google_id', 64)->nullable()->unique();
+            $table->string('avatar_url')->nullable();
+            $table->string('status', 24)->default('pending_email');
+            $table->string('member_code', 16)->unique();
+            $table->string('document_type', 16)->nullable();
+            $table->text('document_number')->nullable();
+            $table->char('document_hash', 64)->nullable()->unique();
+            $table->text('phone')->nullable();
+            $table->timestamp('identity_verified_at')->nullable();
+            $table->foreignId('identity_verified_by_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('blocked_until')->nullable();
+            $table->string('suspension_reason')->nullable();
+            $table->string('locale', 5)->default('en');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index('status');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -37,13 +51,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

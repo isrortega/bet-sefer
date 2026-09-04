@@ -22,6 +22,7 @@ up:
 	@if [ ! -f .env ]; then cp .env.example .env; fi
 	$(DOCKER) up -d --build
 	chmod -R 777 storage bootstrap/cache 2>/dev/null || true
+	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs && touch storage/logs/laravel.log && chmod 666 storage/logs/laravel.log' 2>/dev/null || true
 	@if grep -q '^APP_KEY=$$' .env || ! grep -q '^APP_KEY=.\+' .env; then $(EXEC) php artisan key:generate; fi
 	@echo ""
 	@echo "App:      http://betsefer.local  (https://betsefer.local via Traefik)"
@@ -30,16 +31,19 @@ up:
 down:
 	$(DOCKER) down
 
-fresh:
+perms:
+	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs && touch storage/logs/laravel.log && chmod -R 777 storage/logs && chmod -R 777 bootstrap/cache' 2>/dev/null || true
+
+fresh: perms
 	$(EXEC) php artisan migrate:fresh --seed
 
-seed:
+seed: perms
 	$(EXEC) php artisan db:seed
 
-test:
+test: perms
 	$(EXEC) ./vendor/bin/pest
 
-check:
+check: perms
 	$(EXEC) ./vendor/bin/pint --test
 	$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G
 	$(EXEC) ./vendor/bin/pest

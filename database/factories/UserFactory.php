@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserStatus;
 use App\Models\User;
+use App\Support\CrockfordCode;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -12,34 +14,51 @@ use Illuminate\Support\Str;
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
+    protected $model = User::class;
+
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'ulid' => (string) Str::ulid(),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'status' => UserStatus::PendingIdentity,
+            'member_code' => $this->uniqueMemberCode(),
+            'locale' => 'en',
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function active(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+        return $this->state(fn (): array => [
+            'status' => UserStatus::Active,
+            'identity_verified_at' => now(),
         ]);
+    }
+
+    public function pendingIdentity(): static
+    {
+        return $this->state(fn (): array => ['status' => UserStatus::PendingIdentity]);
+    }
+
+    public function suspended(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => UserStatus::Suspended,
+            'suspension_reason' => 'administrative',
+        ]);
+    }
+
+    private function uniqueMemberCode(): string
+    {
+        do {
+            $code = CrockfordCode::generate();
+        } while (User::withTrashed()->where('member_code', $code)->exists());
+
+        return $code;
     }
 }
