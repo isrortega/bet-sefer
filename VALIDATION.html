@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bet-Sefer — Functional validation guide</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "IBM Plex Sans", system-ui, sans-serif; color:#14211f; background:#f5f6f4; line-height:1.6; }
+  main { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1, h2 { font-family: "Literata", Georgia, serif; line-height:1.25; }
+  h1 { font-size: 2rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.25rem; margin: 2rem 0 .5rem; border-bottom: 1px solid #dfe2dd; padding-bottom:.35rem; }
+  .sub { color:#55625e; margin-top:0; }
+  table { border-collapse: collapse; width: 100%; background:#fff; border:1px solid #dfe2dd; border-radius:10px; overflow:hidden; }
+  th, td { text-align:left; padding:.6rem .8rem; border-bottom:1px solid #dfe2dd; font-size:.9rem; vertical-align:top; }
+  th { background:#fff; color:#55625e; font-weight:600; }
+  tr:last-child td { border-bottom:0; }
+  code, .mono { font-family:"IBM Plex Mono", monospace; font-size:.85em; background:#eef0ec; padding:.05rem .3rem; border-radius:4px; }
+  .step { display:flex; gap:.9rem; margin:.9rem 0; background:#fff; border:1px solid #dfe2dd; border-radius:10px; padding:1rem; }
+  .step .n { flex:0 0 auto; width:1.8rem; height:1.8rem; border-radius:50%; background:#14543f; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; }
+  .step h3 { margin:0 0 .3rem; font-size:1rem; }
+  .step p, .step ul { margin:.2rem 0; font-size:.92rem; }
+  ul { padding-left:1.2rem; }
+  .ok { color:#1e6b4f; } .warn { color:#8a6212; } .tip { color:#3a5199; }
+  .box { background:#fff; border:1px solid #dfe2dd; border-left:4px solid #a8761c; border-radius:8px; padding:.8rem 1rem; margin:.9rem 0; font-size:.92rem; }
+  a { color:#14543f; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bet-Sefer — Functional validation guide</h1>
+  <p class="sub">A 10–15 minute walkthrough of the production application. URL: <a href="https://betsefer.appenlaweb.com">https://betsefer.appenlaweb.com</a></p>
+
+  <h2>Demo accounts</h2>
+  <p class="box"><b>Note:</b> every demo account uses the <b>same test password</b> — <span class="mono">DemoPassword-2026</span>.</p>
+  <table>
+    <tr><th>Role</th><th>Email</th><th>Password</th><th>What to try</th></tr>
+    <tr><td>Administrator</td><td><span class="mono">admin@betsefer.local</span></td><td rowspan="4"><span class="mono">DemoPassword-2026</span></td><td>Readers, Demand, everything</td></tr>
+    <tr><td>Librarian</td><td><span class="mono">librarian@betsefer.local</span></td><td>Front desk, identity verification</td></tr>
+    <tr><td>Shelver</td><td><span class="mono">shelver@betsefer.local</span></td><td>Shelving queue</td></tr>
+    <tr><td>Reader</td><td><span class="mono">reader@betsefer.local</span></td><td>Catalogue + own account</td></tr>
+  </table>
+
+  <h2>1 · Public catalogue and info point (no login)</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Search by title</h3>
+    <p>Open <code>/catalog</code> and search <code>Sapiens</code>, <code>1984</code>, <code>clean code</code> (full-text also matches authors and tags).</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Look up an ISBN that is in the catalogue</h3>
+    <p>Go to <code>/lookup</code> and enter <code class="mono">9780062316110</code> (Sapiens) or <code class="mono">9780553418026</code> (The Martian). You should see availability counts, loan type and the aggregate “loans / year”.</p>
+  </div></div>
+  <div class="step"><div class="n">3</div><div>
+    <h3>Look up an ISBN that is <em>not</em> in the catalogue</h3>
+    <p>Enter an ISBN we do not hold, e.g. <code class="mono">9780307887443</code> is held — use something like <code class="mono">9781501139154</code>. The page should fetch public catalogues (Open Library) and show the title <em>framed as external</em>, with a <b>Suggest acquisition</b> button. Press it — later the admin sees it under Demand.</p>
+  </div></div>
+  <div class="step"><div class="n">4</div><div>
+    <h3>QR copy page</h3>
+    <p>Open <code>/i/&lt;copy-code&gt;</code>. Copy codes are random per environment; get one with the SQL in the appendix. The page must show status + location and <b>never</b> any borrower identity, loan dates, internal notes or cost.</p>
+  </div></div>
+
+  <h2>2 · Front desk (librarian)</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Sign in</h3>
+    <p>Log in with <span class="mono">librarian@betsefer.local</span> / <span class="mono">DemoPassword-2026</span>. The home shows role-based entries; open <b>Front desk</b>.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Check out</h3>
+    <p><b>Reader</b> = a member code (reader <span class="mono">reader@betsefer.local</span> shows its code in <code>/account</code>; appendix can list more) and <b>Copy</b> = an <em>available</em> code from the appendix. Leave hours empty. Expect the green “Checked out — due …”.</p>
+  </div></div>
+  <div class="step"><div class="n">3</div><div>
+    <h3>Check in</h3>
+    <p>Same copy code in the <b>Check in</b> box → copy moves to reception. If you have an overdue reader handy, the loan cap and overdue checks return specific messages — try twice to see the friendly refusals.</p>
+  </div></div>
+
+  <h2>3 · Shelving (shelver)</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Queue</h3>
+    <p>Log out and sign in as <span class="mono">shelver@betsefer.local</span> → open <b>Shelving queue</b>. The copy you just checked in should be at the top.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Advance it</h3>
+    <p>Press <b>Pick up</b> (<span class="mono">at_reception → in_transit</span>) and then <b>Shelve</b> (<span class="mono">in_transit → available</span>). The card leaves the queue.</p>
+  </div></div>
+
+  <h2>4 · Identity verification (librarian / admin)</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Readers list</h3>
+    <p>As librarian open <b>Readers</b>. Search works by name / email / member code. A <em>reader</em> account that is still <code>pending_identity</code> shows a quick verify form.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Verify + restore</h3>
+    <p>Pick document type and an ID number → <b>Verify</b> → status becomes active. Admin-only: close an account (future) and <b>Reopen</b> it; reopen resets to <code>pending_identity</code>.</p>
+  </div></div>
+
+  <h2>5 · Reader area (reader)</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Dashboard</h3>
+    <p>Sign in as <span class="mono">reader@betsefer.local</span> → <b>My account</b>: current loans with due/overdue, member code, status.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>History and member card</h3>
+    <p>Open <b>History</b> (returned loans) and <b>Card</b> (QR renders the member code). A reader never sees the <code>/staff</code> area.</p>
+  </div></div>
+
+  <h2>6 · Administrator management</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Users &amp; roles</h3>
+    <p>Sign in as <span class="mono">admin@betsefer.local</span> and open <b>Users &amp; roles</b> (<code>/staff/users</code>). Create a user manually (name, email, password, role) — it is created active and verified. On any row: change the role with the inline select, <b>Suspend</b> (with reason), <b>Activate</b>, or <b>Close</b>/<b>Reopen</b>. Try to demote or close the <em>only</em> administrator and watch the guard refuse it.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Roles matrix</h3>
+    <p>Open <b>Roles</b> (<code>/staff/roles</code>): read-only matrix of roles × permissions, useful to explain the authorization model.</p>
+  </div></div>
+  <div class="step"><div class="n">3</div><div>
+    <h3>Categories &amp; Locations</h3>
+    <p>Open <b>Categories</b> (<code>/staff/categories</code>): add a root, add a child under it, then move the child under another parent (indent updates) and delete a leaf. The tree refuses to delete a node that still has children. Repeat the same pattern under <b>Locations</b> (<code>/staff/locations</code>), which also carries a code and a type.</p>
+  </div></div>
+  <div class="step"><div class="n">4</div><div>
+    <h3>Loan policies</h3>
+    <p>Open <b>Loan policies</b> (<code>/staff/policies</code>) and edit one: hours, renewals, special-material factor, max active loans, active flag. Out-of-range combos (min &gt; default &gt; max) are refused.</p>
+  </div></div>
+
+  <h2>7 · Acquisition suggestions (administrator)</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Demand</h3>
+    <p>Sign in as <span class="mono">admin@betsefer.local</span> → <b>Demand &amp; suggestions</b>. The suggestion you created in section 1 appears with its book title/author snapshot, ISBN and date. Use <b>Mark as handled</b> and watch the badge change.</p>
+  </div></div>
+
+  <h2>8 · Language</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>EN / ES</h3>
+    <p>On the home page the top-right selector toggles the whole UI between English and Spanish (persisted per account).</p>
+  </div></div>
+
+  <h2>Appendix — getting real codes</h2>
+  <p class="box">Copy codes and member codes are <b>random per seed</b>; ISBNs and titles are fixed. On the production host:</p>
+  <pre style="background:#fff;border:1px solid #dfe2dd;border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.85rem"><code>cd ~/dev/bet-sefer/backend
+# 4 available copies (for check-out)
+docker compose -f docker-compose.prod.yml exec -T postgres psql -U betsefer -d betsefer -c \
+  "select c.code, e.title from copies c join editions e on e.id=c.edition_id where c.status='available' order by random() limit 4;"
+# member codes of readers (for check-out / verify)
+docker compose -f docker-compose.prod.yml exec -T postgres psql -U betsefer -d betsefer -c \
+  "select u.member_code, u.name from users u join model_has_roles m on m.model_id=u.id join roles r on r.id=m.role_id where r.name='reader';"</code></pre>
+
+  <p class="sub">Security notes for the reviewer: the public surface only ever exposes aggregates and an allow-list of fields — no borrower names, emails, member codes, individual loan dates, internal notes or costs are sent to anonymous visitors.</p>
+</main>
+</body>
+</html>

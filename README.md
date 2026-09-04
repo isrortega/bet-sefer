@@ -44,7 +44,7 @@ which compiles assets to `public/build` (no HMR, to keep HTTPS simple).
 
 ## Demo accounts
 
-All share the password `DemoPassword-2026`:
+**Note: every demo account uses the same test password — `DemoPassword-2026`.**
 
 | Role | Email | What they can do |
 |---|---|---|
@@ -55,6 +55,13 @@ All share the password `DemoPassword-2026`:
 
 The seed data: 46 real editions (~117 copies), 112 historical loans (some
 active, some overdue), and a shelving queue with copies waiting.
+
+## Reviewer guide
+
+Open **[`VALIDATION.html`](VALIDATION.html)** — a 10–15 minute functional
+walkthrough of the production app (and the local build) with the demo
+credentials, deterministic ISBN/title examples, and a SQL snippet to fetch the
+per-environment random copy/member codes.
 
 ## Main screens
 
@@ -71,6 +78,12 @@ active, some overdue), and a shelving queue with copies waiting.
   `at_reception → in_transit → available`.
 - **Readers** — `/staff/readers` (librarian/admin): verify identities, reopen
   closed accounts.
+- **Users & roles** — `/staff/users` (admin): create users manually, change
+  roles, activate/suspend/close/reopen. `/staff/roles` shows the read-only
+  roles × permissions matrix.
+- **Collection management** — `/staff/categories` and `/staff/locations`
+  (admin): tree CRUD with rename and parent moves (paths reindexed).
+  `/staff/policies` (admin) edits the loan policies.
 - **Reader account** — `/account`: current loans, history, member QR card.
 
 ## Configuration (all optional for local)
@@ -94,9 +107,20 @@ metadata enrichment; the code is not. This build's cuts are listed there so the
 
 Pushing to `main` deploys to `https://betsefer.appenlaweb.com`. The image is
 built on the VPS from `docker/prod/Dockerfile` and served behind the shared
-Traefik (`traefik-public` + `letsencrypt`). See `docs/08-infrastructure.md`
-for the full flow, one-time host setup and the backup cron. Deployment is
-frozen until the product is validated locally by the maintainer.
+Traefik (`traefik-public` + `letsencrypt`). The GitHub Actions `Deploy`
+workflow pulls `main` on the host, builds, migrates (fail-closed), seeds the
+demo data only on first provisioning, and smoke-tests `/up`. See
+`docs/08-infrastructure.md` for the full flow and one-time host setup.
+
+### Backups
+
+The nightly dump script **`ops/backup.sh`** (`pg_dump` + 7-day retention) is
+implemented and committed. The cron entry on the production host is **not
+configured yet**; to activate it:
+
+```
+30 3 * * * /home/iromero/dev/bet-sefer/backend/ops/backup.sh >> /var/log/betsefer-backup.log 2>&1
+```
 
 ## Docs
 
