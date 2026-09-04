@@ -99,17 +99,22 @@ test('a missing isbn found in public catalogues shows external metadata, without
 });
 
 test('repeated external lookups hit the persistent cache and make no new requests', function () {
+    $calls = 0;
     Http::fake([
-        'openlibrary.org/*' => Http::response([
-            'ISBN:9780451524935' => ['title' => '1984', 'authors' => [['name' => 'George Orwell']]],
-        ]),
+        'openlibrary.org/*' => function () use (&$calls) {
+            $calls++;
+
+            return Http::response([
+                'ISBN:9780451524935' => ['title' => '1984', 'authors' => [['name' => 'George Orwell']]],
+            ]);
+        },
     ]);
     $isbn = '9780451524935';
 
     $this->get("/lookup/{$isbn}")->assertOk();
     $this->get("/lookup/{$isbn}")->assertOk();
 
-    Http::assertSentCount(1);
+    expect($calls)->toBe(1);
 });
 
 test('a copy that is on loan shows no estimated availability for its edition when another copy is free', function () {
