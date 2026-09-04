@@ -1,0 +1,96 @@
+name: betsefer
+
+x-app: &app
+  image: betsefer-app:prod
+  build:
+    context: .
+    dockerfile: docker/prod/Dockerfile
+  restart: unless-stopped
+  env_file:
+    - .env
+  networks:
+    - internal
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  app:
+    <<: *app
+    volumes:
+      - app-storage:/var/www/html/storage
+    expose:
+      - "9000"
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ./docker/prod/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal
+      - traefik-public
+    depends_on:
+      - app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.betsefer.rule=Host(`betsefer.appenlaweb.com`)"
+      - "traefik.http.routers.betsefer.entrypoints=websecure"
+      - "traefik.http.routers.betsefer.tls.certresolver=letsencrypt"
+      - "traefik.http.services.betsefer.loadbalancer.server.port=80"
+
+  queue:
+    <<: *app
+    command: php artisan queue:work --tries=3 --timeout=90
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      - app
+
+  scheduler:
+    <<: *app
+    command: php artisan schedule:work
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      - app
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-betsefer}
+      POSTGRES_USER: ${DB_USERNAME:-betsefer}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-betsefer}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-betsefer} -d ${DB_DATABASE:-betsefer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - internal
+
+volumes:
+  pgdata:
+  app-storage:
+
+networks:
+  internal:
+  traefik-public:
+    external: true

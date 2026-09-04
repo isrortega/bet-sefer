@@ -66,10 +66,11 @@ Multi-stage:
    `redis`, `intl`, `gd`, `opcache`, `zip`
 
 Then:
-- OPcache enabled with `validate_timestamps=0` and preloading.
-- `php artisan config:cache route:cache view:cache event:cache` at build time.
-- Runs as a non-root user.
-- `HEALTHCHECK` hitting `/up`.
+- OPcache enabled with `validate_timestamps=0` (see `docker/prod/php/opcache.ini`).
+- The optimized autoloader and package discovery are regenerated in the image.
+- Runtime caches (`php artisan optimize`) are built **at deploy time**, once the
+  real `.env` exists — not at build time.
+- Runs as a non-root user (`www-data`).
 - No dev dependencies, no source maps, no `.env` inside the image.
 
 Runtime services in prod: `app`, `web`, `postgres`, `redis`, `queue`,
@@ -156,12 +157,13 @@ pushes.
 ## CI/CD — GitHub Actions
 
 **`ci.yml`** — runs on every push to any branch and on every pull request:
-1. checkout, PHP 8.4, Node 22, cache composer and npm
+1. PHP 8.4 (setup-php) and Node 22; cache composer and npm
 2. `composer install`, `npm ci`
-3. `pint --test`
-4. `larastan`
-5. `pest` against a Postgres service container
-6. `composer audit`, `npm audit --audit-level=high`
+3. `npm run build` (catches frontend compile errors)
+4. `pint --test`
+5. `larastan`
+6. `pest` against a Postgres 17 service container
+7. `composer audit`, `npm audit --audit-level=high`
 
 **`deploy.yml`** — runs **only** on push to `main`:
 
@@ -178,26 +180,30 @@ concurrency:
 The trigger is exactly this. Do not add `workflow_dispatch`, do not add other
 branches, do not add tag triggers.
 
-Steps, after `ci` has passed on the same commit:
-1. build the production image, tag with the commit SHA and with `latest`
-2. push to GHCR
-3. SSH to the Hetzner host
-4. `docker compose -f docker-compose.prod.yml pull && up -d`
-5. `php artisan migrate --force`
-6. `php artisan optimize`
-7. smoke test: `curl -f https://betsefer.appenlaweb.com/up`
-8. on failure, redeploy the previously running SHA tag and fail the job
+The image is **built on the VPS**, not pushed to a registry. The workflow uses
+`appleboy/ssh-action` and runs, in `/home/iromero/dev/bet-sefer/backend`:
+
+1. `git pull origin main`
+2. `docker compose -f docker-compose.prod.yml down`
+3. `docker compose -f docker-compose.prod.yml up -d --build`
+4. `docker compose exec -T app php artisan migrate --force` — **fail-closed**:
+   a migration error stops the job (no "auto-migrate on startup" exists in
+   Laravel, so a tolerated failure would leave a broken app in silence)
+5. `docker compose exec -T app php artisan optimize`
+6. `docker system prune -f`
+7. `scripts/smoke-test.sh` — `curl -f` against `/up` with retries
 
 The `concurrency` group with `cancel-in-progress: false` matters: two merges
 landing close together must not run migrations against the same database at the
 same time. The second deploy queues behind the first.
 
-Rollback is automatic inside step 8. Because there is no manual trigger, a
-rollback beyond that is a revert commit on `main` — which is the correct,
-auditable path anyway.
+There is no automatic rollback to a previous image (nothing is pushed to a
+registry). Because there is no manual trigger, the rollback path is a **revert
+commit on `main`** — the correct, auditable option.
 
-Secrets: `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `GHCR_TOKEN`, plus every runtime
-variable above.
+GitHub secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (scoped to the
+`production` environment). Every runtime variable lives in a single `.env`
+file provisioned on the server; it is never stored in GitHub.
 
 ## Host setup (once, for the Traefik host)
 
@@ -206,10 +212,16 @@ variable above.
 - Docker and Compose plugin installed.
 - Firewall: 22, 80, 443 only.
 - A Traefik instance on the host with the `web` (80) and `websecure` (443)
-  entrypoints, the Docker provider on the shared `traefik_net` network, and a
-  Let's Encrypt `certResolver` (HTTP-01 or DNS-01). The app's labels reference
-  that `certResolver` in production; the exact name is confirmed at deploy time.
-- A nightly `pg_dump` to the host (R2 backup in a later phase), retained 7 days.
+  entrypoints, the Docker provider on the shared **`traefik-public`** network,
+  and a Let's Encrypt **`letsencrypt`** `certResolver` (HTTP-01 or DNS-01).
+  `docker-compose.prod.yml` attaches the `web` container to `traefik-public`
+  and references that `certResolver` in its labels.
+- Clone the repository at `/home/iromero/dev/bet-sefer/backend` (this exact
+  path is what `deploy.yml` uses) and provision the `.env` there from
+  `.env.example` with production values (`APP_KEY` generated, `APP_DEBUG=false`,
+  real DB/Redis/mail/Google/OpenRouter values). Confirm `.env` is untracked.
+- Nightly backup via `ops/backup.sh` (pg_dump, 7-day retention). Add to cron:
+  `30 3 * * * /home/iromero/dev/bet-sefer/backend/ops/backup.sh >> /var/log/betsefer-backup.log 2>&1`
 
 ## Deployment checklist (run at phase 10, after local validation)
 

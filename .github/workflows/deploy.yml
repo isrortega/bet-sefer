@@ -1,0 +1,46 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd ~/dev/bet-sefer/backend
+
+            echo "→ Pulling main"
+            git pull origin main
+
+            echo "→ Stopping current stack"
+            docker compose -f docker-compose.prod.yml down || true
+
+            echo "→ Building and starting"
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "→ Running migrations (fail-closed)"
+            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+
+            echo "→ Caching config"
+            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize
+
+            echo "→ Pruning dangling images"
+            docker system prune -f || true
+
+            echo "→ Smoke test"
+            scripts/smoke-test.sh
