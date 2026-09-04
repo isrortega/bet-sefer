@@ -1,58 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bet-Sefer — Library Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A working library management system for a single branch: catalogue, circulation
+(check-out / check-in / renewal), full-text search, role-based access, a
+shelving queue for staff, and a public information point reachable by QR.
 
-## About Laravel
+Built as a single Laravel monolith: **Laravel 13 (PHP 8.4) + Inertia + Vue 3 +
+Tailwind 4 + PostgreSQL 17 + Redis**. There is no separate frontend service.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+> Technical assessment for Valsoft. Delivery-gate: the product runs locally
+> behind the shared Traefik at `betsefer.local`. Production deployment is
+> deliberately deferred until local validation (see `docs/08`).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Quick start
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Prerequisites: Docker with the Compose plugin, and an existing Traefik instance
+with a shared `traefik_net` network and `betsefer.local` already resolving to
+the host (local DNS is fine).
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cp .env.example .env       # first time only; fills APP_KEY automatically
+make up                    # build images, start services, install deps
+make fresh                 # migrate:fresh --seed (demo data)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Then open **https://betsefer.local** (the shared Traefik redirects HTTP to
+HTTPS; accept the self-signed certificate once).
 
-## Contributing
+Useful commands:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Command | What it does |
+|---|---|
+| `make up` / `make down` | Start / stop the dev stack |
+| `make fresh` | `migrate:fresh --seed` |
+| `make seed` | Re-run seeders (after a fresh migration) |
+| `make test` | Run Pest |
+| `make check` | Pint + Larastan + Pest (run before every commit) |
+| `make shell` | Bash inside the app container |
+| `make logs` | Follow container logs |
 
-## Code of Conduct
+Services run in Docker: `app` (PHP-FPM), `web` (Nginx), `queue`, `scheduler`,
+`postgres:17`, `redis:7`, `mailpit` (UI on http://localhost:8025), and `vite`
+which compiles assets to `public/build` (no HMR, to keep HTTPS simple).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Demo accounts
 
-## Security Vulnerabilities
+All share the password `DemoPassword-2026`:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Role | Email | What they can do |
+|---|---|---|
+| Administrator | `admin@betsefer.local` | Everything, incl. reader restore |
+| Librarian | `librarian@betsefer.local` | Front desk, identity verification |
+| Shelver | `shelver@betsefer.local` | The `/staff/shelving` queue |
+| Reader | `reader@betsefer.local` | Catalogue + `/account` area |
 
-## License
+The seed data: 46 real editions (~117 copies), 112 historical loans (some
+active, some overdue), and a shelving queue with copies waiting.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Main screens
+
+- **Public** — `/catalog` search by title/author/tag; `/lookup?isbn=` and
+  `/i/{code}` (QR target) show status, location and availability **without any
+  borrower identity**. Anonymous payloads are allow-listed.
+- **Sign in / register** — email+password always works. Google SSO appears
+  only when `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set. New accounts
+  land in `pending_email`, then `pending_identity`; borrowing activates only
+  after the librarian verifies the document in person.
+- **Front desk** — `/staff/desk` (librarian): check out by scanning member code
+  + copy code, check in, renew.
+- **Shelving** — `/staff/shelving` (shelver, mobile): copies move
+  `at_reception → in_transit → available`.
+- **Readers** — `/staff/readers` (librarian/admin): verify identities, reopen
+  closed accounts.
+- **Reader account** — `/account`: current loans, history, member QR card.
+
+## Configuration (all optional for local)
+
+`.env.example` documents every variable, with the ones that need real values
+when you go live:
+
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — enables SSO.
+- `OPENROUTER_API_KEY` + `AI_MODEL` — enables AI tag/category suggestions on
+  ISBN import (the import screens are a later phase).
+- Brevo SMTP values — production mail; local dev uses Mailpit.
+- R2 variables are commented out — storage is local disk for this phase.
+
+## Roadmap and deliberate cuts
+
+See `docs/09-roadmap.md`. The schema is ready for fines, reservations and
+metadata enrichment; the code is not. This build's cuts are listed there so the
+15-minute reviewer journey stays clean.
+
+## Docs
+
+`CLAUDE.md` holds the architecture rules; `docs/` holds the design (domain
+model, business rules, ISBN/AI, public point, design system, security,
+testing, infrastructure, roadmap).

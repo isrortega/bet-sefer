@@ -20,6 +20,32 @@ commented variables. Migration steps: add the S3 driver config, flip
 `storage:link`-equivalent for private keys. Signed URLs are prepared for the
 follow-up; covers stay public.
 
+## Deferred in this build (delivery-day cuts)
+
+Everything below is designed in the docs and ready in the schema; only the
+logic/UI is missing. See the phase notes in `docs/08-infrastructure.md` for the
+local-first delivery gate.
+
+- **ISBN ingestion UI with AI classification** — the librarian screens that
+  fetch Open Library / Google Books and run the OpenRouter classifier. The
+  domain services are specified in `docs/03-isbn-and-ai.md`; the metadata
+  cache tables exist.
+- **Staff catalogue management** (add/edit/delete editions and copies,
+  taxonomy trees, loan policies, settings) — permissions exist
+  (`editions.*`, `copies.*`, `taxonomy.manage`, `settings.manage`,
+  `policies.manage`); the admin screens are not built. Editions can be
+  browsed publicly, borrowed and returned today.
+- **Printable QR label sheets** (`/staff/copies/labels`) — the generator is in
+  place for member cards and copy codes; the A4 print sheet is not.
+- **Reports / dashboards UI** — `demand_events` are recorded on empty searches
+  and acquisition suggestions so the data exists; the admin report screens are
+  not built.
+- **Password reset** and notification emails beyond account verification.
+- **Reservations** — see below (the `reserved` copy state stays unreachable).
+- **Public external ISBN lookup** when a title is not in the catalogue — the
+  suggestion flow exists; reaching out to live providers from the anonymous
+  surface is deferred to the next phase (see `docs/03`).
+
 ## Reservations
 
 The `reserved` copy status and the `demand_events` table exist. Missing: a
