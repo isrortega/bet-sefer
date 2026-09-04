@@ -5,6 +5,7 @@ use App\Models\Copy;
 use App\Models\Loan;
 use App\Models\LoanPolicy;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -180,4 +181,24 @@ test('a second checkout attempt of the same copy is refused', function () {
         ->assertSessionHasErrors(['code']);
 
     expect(Loan::where('copy_id', $copy->id)->count())->toBe(1);
+});
+
+test('the partial unique index is the backstop for simultaneous checkouts', function () {
+    $copy = availableCopy();
+    $first = activeReader();
+    $second = activeReader();
+
+    Loan::factory()->create([
+        'copy_id' => $copy->id,
+        'user_id' => $first->id,
+        'checked_out_by_id' => librarian()->id,
+    ]);
+
+    // A second active loan for the same copy must be rejected by the
+    // UNIQUE (copy_id) WHERE returned_at IS NULL index, no matter the code path.
+    expect(fn () => Loan::factory()->create([
+        'copy_id' => $copy->id,
+        'user_id' => $second->id,
+        'checked_out_by_id' => librarian()->id,
+    ]))->toThrow(QueryException::class);
 });

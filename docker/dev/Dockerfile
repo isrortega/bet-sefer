@@ -10,6 +10,8 @@ RUN apt-get update \
     && docker-php-ext-install pdo_pgsql pgsql intl zip gd bcmath pcntl opcache exif \
     && pecl install redis \
     && docker-php-ext-enable redis \
+    && pecl install pcov \
+    && docker-php-ext-enable pcov \
     && apt-get purge -y --auto-remove $PHPIZE_DEPS \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/pear
