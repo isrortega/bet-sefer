@@ -173,5 +173,7 @@
     "demand.handled": "Atendida",
     "demand.stats_pending": "pendientes",
     "demand.stats_total": "total",
-    "demand.handled_flash": "Sugerencia marcada como atendida."
+    "demand.handled_flash": "Sugerencia marcada como atendida.",
+    "demand.book": "Libro",
+    "demand.unknown_title": "Título desconocido"
 }

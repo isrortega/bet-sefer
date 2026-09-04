@@ -34,6 +34,26 @@ function suggestion(string $isbn = '9783161484100'): DemandEvent
     ]);
 }
 
+test('a suggestion stores the book snapshot shown to the admin list', function () {
+    $admin = demandUser('administrator', ['demand.manage']);
+    Http::fake([
+        'openlibrary.org/*' => Http::response([
+            'ISBN:9780553418026' => ['title' => 'The Martian', 'authors' => [['name' => 'Andy Weir']], 'publishers' => [['name' => 'Crown']], 'publish_date' => '2014'],
+        ]),
+    ]);
+
+    $this->post('/lookup/suggest', ['isbn' => '9780553418026'])->assertSessionHasNoErrors();
+
+    $event = DemandEvent::where('type', 'acquisition_suggestion')->firstOrFail();
+    expect($event->metadata['title'])->toBe('The Martian')
+        ->and($event->metadata['publisher'])->toBe('Crown');
+
+    $this->actingAs($admin)->get('/staff/demand')
+        ->assertInertia(fn ($page) => $page
+            ->component('Staff/Demand')
+            ->where('suggestions.data.0.meta.title', 'The Martian'));
+});
+
 test('an administrator can list acquisition suggestions and mark one handled', function () {
     $admin = demandUser('administrator', ['demand.manage']);
     suggestion();

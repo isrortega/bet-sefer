@@ -13,13 +13,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $query_text
  * @property int|null $user_id
  * @property string|null $ip_hash
+ * @property array<string, mixed>|null $metadata
  * @property Carbon|null $resolved_at
  */
 class DemandEvent extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['type', 'edition_id', 'isbn', 'query_text', 'user_id', 'ip_hash', 'created_at', 'resolved_at'];
+    protected $fillable = ['type', 'edition_id', 'isbn', 'query_text', 'user_id', 'ip_hash', 'created_at', 'resolved_at', 'metadata'];
 
-    protected $casts = ['created_at' => 'datetime', 'resolved_at' => 'datetime'];
+    protected $casts = ['created_at' => 'datetime', 'resolved_at' => 'datetime', 'metadata' => 'array'];
 }
