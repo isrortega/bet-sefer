@@ -9,6 +9,8 @@ vendor
 storage/app
 storage/logs
 storage/framework/cache/data
+storage/inertia-devtools
+storage/framework/views
 public/build
 README.md
 Makefile

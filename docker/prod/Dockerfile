@@ -31,6 +31,9 @@ RUN apk add --no-cache \
     && apk del $PHPIZE_DEPS \
     && rm -rf /tmp/pear
 
+# nginx serves the app (same image, root /var/www/html/public)
+RUN apk add --no-cache nginx
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY --from=vendor /app/vendor /var/www/html/vendor
