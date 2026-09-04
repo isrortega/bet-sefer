@@ -1,6 +1,9 @@
 DOCKER := docker compose
-EXEC := $(DOCKER) exec -u $(shell id -u) app
 UID := $(shell id -u)
+# Runtime (artisan/tests) runs as the same user as php-fpm so storage has one owner.
+EXEC := $(DOCKER) exec -u 33 app
+# Source-writing tools (pint fix, phpstan cache, .env keygen) run as the host user.
+HOST := $(DOCKER) exec -u $(UID) app
 
 .PHONY: help up down fresh seed test check pint stan shell logs a
 
@@ -21,9 +24,8 @@ help:
 up:
 	@if [ ! -f .env ]; then cp .env.example .env; fi
 	$(DOCKER) up -d --build
-	chmod -R 777 storage bootstrap/cache 2>/dev/null || true
-	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs && touch storage/logs/laravel.log && chmod 666 storage/logs/laravel.log' 2>/dev/null || true
-	@if grep -q '^APP_KEY=$$' .env || ! grep -q '^APP_KEY=.\+' .env; then $(EXEC) php artisan key:generate; fi
+	$(MAKE) perms
+	@if grep -q '^APP_KEY=$$' .env || ! grep -q '^APP_KEY=.\+' .env; then $(HOST) php artisan key:generate; fi
 	@echo ""
 	@echo "App:      http://betsefer.local  (https://betsefer.local via Traefik)"
 	@echo "Mailpit:  http://localhost:8025"
@@ -32,7 +34,7 @@ down:
 	$(DOCKER) down
 
 perms:
-	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs && touch storage/logs/laravel.log && chmod -R 777 storage/logs && chmod -R 777 bootstrap/cache' 2>/dev/null || true
+	$(DOCKER) exec -u root app sh -c 'mkdir -p storage/logs storage/framework/cache/data storage/framework/sessions storage/framework/views storage/app/public/covers bootstrap/cache && touch storage/logs/laravel.log && chown -R www-data:www-data storage bootstrap/cache && chmod -R u+rwX,go+rX storage bootstrap/cache' 2>/dev/null || true
 
 fresh: perms
 	$(EXEC) php artisan migrate:fresh --seed
@@ -45,14 +47,14 @@ test: perms
 
 check: perms
 	$(EXEC) ./vendor/bin/pint --test
-	$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G
+	$(HOST) ./vendor/bin/phpstan analyse --memory-limit=1G
 	$(EXEC) ./vendor/bin/pest
 
 pint:
-	$(EXEC) ./vendor/bin/pint
+	$(HOST) ./vendor/bin/pint
 
 stan:
-	$(EXEC) ./vendor/bin/phpstan analyse --memory-limit=1G
+	$(HOST) ./vendor/bin/phpstan analyse --memory-limit=1G
 
 shell:
 	$(EXEC) bash
