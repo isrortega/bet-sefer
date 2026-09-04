@@ -9,6 +9,9 @@ parameters:
 
     # Model properties are populated via Eloquent magic; ignore common noise.
     ignoreErrors:
+        - message: '#Class App\\Models\\.* uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types#'
+          paths:
+            - app/Models/*.php
 
     excludePaths:
         - app/Providers/RouteServiceProvider.php (?)
