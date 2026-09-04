@@ -26,15 +26,9 @@ Everything below is designed in the docs and ready in the schema; only the
 logic/UI is missing. See the phase notes in `docs/08-infrastructure.md` for the
 local-first delivery gate.
 
-- **ISBN ingestion UI with AI classification** — the librarian screens that
-  fetch Open Library / Google Books and run the OpenRouter classifier. The
-  domain services are specified in `docs/03-isbn-and-ai.md`; the metadata
-  cache tables exist.
-- **Staff catalogue management** (add/edit/delete editions and copies,
-  taxonomy trees, loan policies, settings) — permissions exist
-  (`editions.*`, `copies.*`, `taxonomy.manage`, `settings.manage`,
-  `policies.manage`); the admin screens are not built. Editions can be
-  browsed publicly, borrowed and returned today.
+- **AI classification on ISBN import** — the OpenRouter classifier that
+  suggests category/tags when adding a book. ISBN prefilling from Open Library
+  / Google Books is live on the staff form; the AI suggestion step is not.
 - **Printable QR label sheets** (`/staff/copies/labels`) — the generator is in
   place for member cards and copy codes; the A4 print sheet is not.
 - **Reports / dashboards UI** — `demand_events` are recorded on empty searches
@@ -52,6 +46,16 @@ local-first delivery gate.
 - **Acquisition suggestions area** — `/staff/demand` (admin only,
   `demand.manage`) lists `acquisition_suggestion` events, lets an admin mark
   one as handled (`resolved_at`), and shows pending/total counts.
+- **Staff catalogue management** — `/staff/catalog` (librarian/admin) creates,
+  lists, searches and edits editions with full metadata; copies are added and
+  edited inside the edition form. Delete is admin-only and follows the doc
+  rule (soft when loan history exists, hard otherwise, refused while a copy is
+  on loan). The create form prefills from the ISBN providers.
+- **Collection management** — `/staff/users` (users + role changes with
+  guards), `/staff/roles` (read-only matrix), `/staff/categories` and
+  `/staff/locations` (tree CRUD with reindexed moves) and `/staff/policies`
+  (loan policy editing) round out the administrator screens.
+- **Settings management** (`settings.manage`) remains a permission with no UI.
 
 ## Reservations
 

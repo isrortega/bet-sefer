@@ -78,6 +78,10 @@ per-environment random copy/member codes.
   `at_reception → in_transit → available`.
 - **Readers** — `/staff/readers` (librarian/admin): verify identities, reopen
   closed accounts.
+- **Catalogue management** — `/staff/catalog` (librarian/admin): create, search
+  and edit editions with full metadata (authors/editorial/tags free-text, ISBN
+  prefill), add and edit copies inside the edition form. Deleting an edition or
+  copy is admin-only and follows the doc rule (soft if history, hard otherwise).
 - **Users & roles** — `/staff/users` (admin): create users manually, change
   roles, activate/suspend/close/reopen. `/staff/roles` shows the read-only
   roles × permissions matrix.
