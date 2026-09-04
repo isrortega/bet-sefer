@@ -64,7 +64,7 @@ class ReaderManagementController extends Controller
             return back()->withErrors($e->errors())->withInput();
         }
 
-        return back()->with('message', "Identity verified — {$user->name} can borrow now.");
+        return back()->with('message', __('readers.verified', ['name' => $user->name]));
     }
 
     public function restore(Request $request, string $ulid): RedirectResponse

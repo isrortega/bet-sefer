@@ -1,7 +1,9 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useTrans } from '../../i18n';
 
+const { t } = useTrans();
 const props = defineProps({
     member: Object,
     loans: Array,
@@ -9,21 +11,22 @@ const props = defineProps({
 
 const page = usePage();
 const flash = computed(() => page.props.flash ?? {});
+const firstName = computed(() => (props.member?.name ?? '').split(' ')[0]);
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#F5F6F4]">
-        <header class="border-b border-[#DFE2DD] bg-white px-4 py-3">
+    <div class="min-h-screen bg-shelf">
+        <header class="border-b border-rule bg-paper px-4 py-3">
             <div class="mx-auto flex max-w-4xl items-center justify-between">
-                <a href="/" class="font-serif text-lg font-medium text-[#14211F]">Bet-Sefer</a>
+                <a href="/" class="font-serif text-lg font-medium text-ink">Bet-Sefer</a>
                 <nav class="flex items-center gap-4 text-sm">
-                    <a href="/account" class="font-medium text-[#14543F]">Dashboard</a>
-                    <a href="/account/history" class="text-[#55625E] hover:text-[#14211F]">History</a>
-                    <a href="/account/card" class="text-[#55625E] hover:text-[#14211F]">Card</a>
-                    <a href="/" class="text-[#55625E] hover:text-[#14211F]">Browse</a>
+                    <a href="/account" class="font-medium text-buckram">{{ t('nav.dashboard') }}</a>
+                    <a href="/account/history" class="text-ink-muted hover:text-ink">{{ t('nav.history') }}</a>
+                    <a href="/account/card" class="text-ink-muted hover:text-ink">{{ t('nav.card') }}</a>
+                    <a href="/" class="text-ink-muted hover:text-ink">{{ t('nav.catalog') }}</a>
                     <form method="post" action="/logout" class="inline">
                         <input type="hidden" name="_token" :value="page.props.csrf_token" />
-                        <button type="submit" class="text-[#55625E] hover:text-[#14211F]">Sign out</button>
+                        <button type="submit" class="text-ink-muted hover:text-ink">{{ t('nav.sign_out') }}</button>
                     </form>
                 </nav>
             </div>
@@ -31,44 +34,44 @@ const flash = computed(() => page.props.flash ?? {});
 
         <main class="mx-auto max-w-4xl px-4 py-8">
             <div v-if="flash.message || flash.error" class="mb-6 rounded-md border px-3 py-2 text-sm"
-                 :class="flash.error ? 'border-[#F8E7EA] bg-[#F8E7EA] text-[#8A2B3B]' : 'border-[#E6F1EB] bg-[#E6F1EB] text-[#1E6B4F]'">
+                 :class="flash.error ? 'border-lost-bg bg-lost-bg text-lost' : 'border-available-bg bg-available-bg text-available'">
                 {{ flash.error || flash.message }}
             </div>
 
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-[25px] font-medium text-[#14211F]">Hello, {{ member.name.split(' ')[0] }}</h1>
-                    <p class="mt-1 text-sm text-[#55625E]">
-                        Member code
-                        <span class="font-mono text-[#14211F]">{{ member.code }}</span>
-                        · status <span class="capitalize">{{ member.status.replaceAll('_', ' ') }}</span>
+                    <h1 class="text-[25px] font-medium text-ink">{{ t('account.hello', { name: firstName }) }}</h1>
+                    <p class="mt-1 text-sm text-ink-muted">
+                        {{ t('account.member_code') }}
+                        <span class="font-mono text-ink">{{ member.code }}</span>
+                        · {{ t('account.status') }} <span class="capitalize">{{ member.status.replaceAll('_', ' ') }}</span>
                     </p>
                 </div>
             </div>
 
             <section class="mt-8">
-                <h2 class="text-[20px] font-medium text-[#14211F]">Current loans</h2>
+                <h2 class="text-[20px] font-medium text-ink">{{ t('account.current_loans') }}</h2>
 
-                <p v-if="loans.length === 0" class="mt-3 text-sm text-[#55625E]">
-                    No books out right now.
-                </p>
+                <p v-if="loans.length === 0" class="mt-3 text-sm text-ink-muted">{{ t('account.no_loans') }}</p>
 
-                <div v-else class="mt-3 overflow-hidden rounded-[10px] border border-[#DFE2DD] bg-white">
+                <div v-else class="mt-3 overflow-hidden rounded-[10px] border border-rule bg-paper">
                     <table class="w-full text-left text-sm">
-                        <thead class="border-b border-[#DFE2DD] text-[#55625E]">
+                        <thead class="border-b border-rule text-ink-muted">
                             <tr>
-                                <th class="px-4 py-2 font-medium">Title</th>
-                                <th class="px-4 py-2 font-medium">Copy</th>
-                                <th class="px-4 py-2 font-medium">Due</th>
+                                <th class="px-4 py-2 font-medium">{{ t('account.title') }}</th>
+                                <th class="px-4 py-2 font-medium">{{ t('account.copy') }}</th>
+                                <th class="px-4 py-2 font-medium">{{ t('account.due') }}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="loan in loans" :key="loan.code" class="border-b border-[#DFE2DD] last:border-0">
-                                <td class="px-4 py-2 font-serif text-[#14211F]">{{ loan.title }}</td>
-                                <td class="px-4 py-2 font-mono text-xs text-[#55625E]">{{ loan.copy_code }}</td>
+                            <tr v-for="loan in loans" :key="loan.code" class="border-b border-rule last:border-0">
+                                <td class="px-4 py-2 font-serif text-ink">{{ loan.title }}</td>
+                                <td class="px-4 py-2 font-mono text-xs text-ink-muted">{{ loan.copy_code }}</td>
                                 <td class="px-4 py-2">
-                                    <span v-if="loan.overdue" class="rounded-md bg-[#F8E7EA] px-2 py-0.5 text-xs font-medium text-[#8A2B3B]">Overdue · {{ new Date(loan.due_at).toLocaleDateString() }}</span>
-                                    <span v-else class="text-[#14211F]">{{ new Date(loan.due_at).toLocaleDateString() }}</span>
+                                    <span v-if="loan.overdue" class="rounded-md bg-lost-bg px-2 py-0.5 text-xs font-medium text-lost">
+                                        {{ t('account.overdue', { date: new Date(loan.due_at).toLocaleDateString() }) }}
+                                    </span>
+                                    <span v-else class="text-ink">{{ new Date(loan.due_at).toLocaleDateString() }}</span>
                                 </td>
                             </tr>
                         </tbody>

@@ -1,5 +1,8 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
+import { useTrans } from '../../i18n';
+
+const { t } = useTrans();
 
 const form = useForm({
     name: '',
@@ -14,44 +17,42 @@ function submit() {
 </script>
 
 <template>
-    <div class="flex min-h-screen items-center justify-center bg-[#F5F6F4] p-4">
+    <div class="flex min-h-screen items-center justify-center bg-shelf p-4">
         <div class="w-full max-w-sm">
-            <p class="mb-6 text-[#14211F]">
-                <span class="font-serif text-[31px] font-medium">Bet-Sefer</span>
+            <p class="mb-6 text-ink">
+                <span class="font-serif text-[31px] font-medium">{{ t('app.name') }}</span>
             </p>
-            <p class="-mt-3 mb-5 text-sm text-[#55625E]">
-                Create a reader account. Borrowing activates after your identity is verified at the front desk.
-            </p>
+            <p class="-mt-3 mb-5 text-sm text-ink-muted">{{ t('auth.register_hint') }}</p>
 
-            <form class="rounded-[10px] border border-[#DFE2DD] bg-white p-5" @submit.prevent="submit">
-                <label class="block text-sm text-[#14211F]" for="name">Full name</label>
+            <form class="rounded-[10px] border border-rule bg-paper p-5" @submit.prevent="submit">
+                <label class="block text-sm text-ink" for="name">{{ t('auth.full_name') }}</label>
                 <input id="name" v-model="form.name" required maxlength="160"
-                       class="mt-1 w-full rounded-md border border-[#DFE2DD] px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-[#A8761C] focus:ring-offset-2" />
-                <p v-if="form.errors.name" class="mt-1 text-sm text-[#8A2B3B]">{{ form.errors.name }}</p>
+                       class="mt-1 w-full rounded-md border border-rule px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-brass focus:ring-offset-2" />
+                <p v-if="form.errors.name" class="mt-1 text-sm text-lost">{{ form.errors.name }}</p>
 
-                <label class="mt-4 block text-sm text-[#14211F]" for="email">Email</label>
+                <label class="mt-4 block text-sm text-ink" for="email">{{ t('auth.email') }}</label>
                 <input id="email" v-model="form.email" type="email" required
-                       class="mt-1 w-full rounded-md border border-[#DFE2DD] px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-[#A8761C] focus:ring-offset-2" />
-                <p v-if="form.errors.email" class="mt-1 text-sm text-[#8A2B3B]">{{ form.errors.email }}</p>
+                       class="mt-1 w-full rounded-md border border-rule px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-brass focus:ring-offset-2" />
+                <p v-if="form.errors.email" class="mt-1 text-sm text-lost">{{ form.errors.email }}</p>
 
-                <label class="mt-4 block text-sm text-[#14211F]" for="password">Password</label>
+                <label class="mt-4 block text-sm text-ink" for="password">{{ t('auth.password') }}</label>
                 <input id="password" v-model="form.password" type="password" minlength="12" required
-                       class="mt-1 w-full rounded-md border border-[#DFE2DD] px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-[#A8761C] focus:ring-offset-2" />
-                <p v-if="form.errors.password" class="mt-1 text-sm text-[#8A2B3B]">{{ form.errors.password }}</p>
+                       class="mt-1 w-full rounded-md border border-rule px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-brass focus:ring-offset-2" />
+                <p v-if="form.errors.password" class="mt-1 text-sm text-lost">{{ form.errors.password }}</p>
 
-                <label class="mt-4 block text-sm text-[#14211F]" for="password_confirmation">Repeat password</label>
+                <label class="mt-4 block text-sm text-ink" for="password_confirmation">{{ t('auth.repeat_password') }}</label>
                 <input id="password_confirmation" v-model="form.password_confirmation" type="password" required
-                       class="mt-1 w-full rounded-md border border-[#DFE2DD] px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-[#A8761C] focus:ring-offset-2" />
+                       class="mt-1 w-full rounded-md border border-rule px-3 py-2 text-[16px] outline-none focus:ring-2 focus:ring-brass focus:ring-offset-2" />
 
                 <button type="submit" :disabled="form.processing"
-                        class="mt-5 w-full rounded-md bg-[#14543F] px-3 py-2 font-medium text-white outline-none hover:bg-[#0f4433] focus:ring-2 focus:ring-[#A8761C] focus:ring-offset-2 disabled:opacity-60">
-                    Create account
+                        class="mt-5 w-full rounded-md bg-buckram px-3 py-2 font-medium text-paper outline-none hover:bg-buckram-deep focus:ring-2 focus:ring-brass focus:ring-offset-2 disabled:opacity-60">
+                    {{ t('auth.create_account') }}
                 </button>
             </form>
 
-            <p class="mt-4 text-center text-sm text-[#55625E]">
-                Already registered?
-                <a href="/login" class="font-medium text-[#14543F] hover:underline">Sign in</a>
+            <p class="mt-4 text-center text-sm text-ink-muted">
+                {{ t('auth.already_registered') }}
+                <a href="/login" class="font-medium text-buckram hover:underline">{{ t('auth.sign_in') }}</a>
             </p>
         </div>
     </div>
