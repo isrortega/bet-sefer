@@ -51,6 +51,8 @@ class HandleInertiaRequests extends Middleware
                 'categories' => $user->can('taxonomy.manage'),
                 'locations' => $user->can('taxonomy.manage'),
                 'policies' => $user->can('policies.manage'),
+                'catalog_manage' => $user->can('editions.create'),
+                'editions_delete' => $user->can('editions.delete'),
             ],
         ];
     }

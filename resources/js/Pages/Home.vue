@@ -44,6 +44,10 @@ const caps = computed(() => user.value?.capabilities ?? {});
                    class="rounded-md bg-brass px-4 py-2 font-medium text-paper outline-none hover:opacity-90 focus:ring-2 focus:ring-brass focus:ring-offset-2">
                     {{ t('home.front_desk') }}
                 </a>
+                <a v-if="caps.catalog_manage" href="/staff/catalog"
+                   class="rounded-md border border-rule bg-paper px-4 py-2 font-medium text-ink outline-none hover:bg-shelf focus:ring-2 focus:ring-brass">
+                    {{ t('home.catalog_manage') }}
+                </a>
                 <a v-if="caps.shelving" href="/staff/shelving"
                    class="rounded-md border border-rule bg-paper px-4 py-2 font-medium text-ink outline-none hover:bg-shelf focus:ring-2 focus:ring-brass">
                     {{ t('home.shelving') }}

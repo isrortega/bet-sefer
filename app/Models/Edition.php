@@ -120,4 +120,9 @@ class Edition extends Model
     {
         return $this->copies()->where('status', 'available')->exists();
     }
+
+    public function getRouteKeyName(): string
+    {
+        return 'ulid';
+    }
 }
