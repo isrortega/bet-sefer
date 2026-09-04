@@ -78,6 +78,12 @@ per-environment random copy/member codes.
   `at_reception → in_transit → available`.
 - **Readers** — `/staff/readers` (librarian/admin): verify identities, reopen
   closed accounts.
+- **Users & roles** — `/staff/users` (admin): create users manually, change
+  roles, activate/suspend/close/reopen. `/staff/roles` shows the read-only
+  roles × permissions matrix.
+- **Collection management** — `/staff/categories` and `/staff/locations`
+  (admin): tree CRUD with rename and parent moves (paths reindexed).
+  `/staff/policies` (admin) edits the loan policies.
 - **Reader account** — `/account`: current loans, history, member QR card.
 
 ## Configuration (all optional for local)

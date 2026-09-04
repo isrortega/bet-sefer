@@ -105,13 +105,31 @@
     <p>Open <b>History</b> (returned loans) and <b>Card</b> (QR renders the member code). A reader never sees the <code>/staff</code> area.</p>
   </div></div>
 
-  <h2>6 · Acquisition suggestions (administrator)</h2>
+  <h2>6 · Administrator management</h2>
+  <div class="step"><div class="n">1</div><div>
+    <h3>Users &amp; roles</h3>
+    <p>Sign in as <span class="mono">admin@betsefer.local</span> and open <b>Users &amp; roles</b> (<code>/staff/users</code>). Create a user manually (name, email, password, role) — it is created active and verified. On any row: change the role with the inline select, <b>Suspend</b> (with reason), <b>Activate</b>, or <b>Close</b>/<b>Reopen</b>. Try to demote or close the <em>only</em> administrator and watch the guard refuse it.</p>
+  </div></div>
+  <div class="step"><div class="n">2</div><div>
+    <h3>Roles matrix</h3>
+    <p>Open <b>Roles</b> (<code>/staff/roles</code>): read-only matrix of roles × permissions, useful to explain the authorization model.</p>
+  </div></div>
+  <div class="step"><div class="n">3</div><div>
+    <h3>Categories &amp; Locations</h3>
+    <p>Open <b>Categories</b> (<code>/staff/categories</code>): add a root, add a child under it, then move the child under another parent (indent updates) and delete a leaf. The tree refuses to delete a node that still has children. Repeat the same pattern under <b>Locations</b> (<code>/staff/locations</code>), which also carries a code and a type.</p>
+  </div></div>
+  <div class="step"><div class="n">4</div><div>
+    <h3>Loan policies</h3>
+    <p>Open <b>Loan policies</b> (<code>/staff/policies</code>) and edit one: hours, renewals, special-material factor, max active loans, active flag. Out-of-range combos (min &gt; default &gt; max) are refused.</p>
+  </div></div>
+
+  <h2>7 · Acquisition suggestions (administrator)</h2>
   <div class="step"><div class="n">1</div><div>
     <h3>Demand</h3>
     <p>Sign in as <span class="mono">admin@betsefer.local</span> → <b>Demand &amp; suggestions</b>. The suggestion you created in section 1 appears with its book title/author snapshot, ISBN and date. Use <b>Mark as handled</b> and watch the badge change.</p>
   </div></div>
 
-  <h2>7 · Language</h2>
+  <h2>8 · Language</h2>
   <div class="step"><div class="n">1</div><div>
     <h3>EN / ES</h3>
     <p>On the home page the top-right selector toggles the whole UI between English and Spanish (persisted per account).</p>
