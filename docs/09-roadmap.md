@@ -1,0 +1,56 @@
+# 09 — Roadmap
+
+Everything here was designed for and deliberately deferred. The schema already
+carries the columns and states each item needs, so none of it requires a
+rewrite. This file doubles as the roadmap section of the README.
+
+## Reservations
+
+The `reserved` copy status and the `demand_events` table exist. Missing: a
+`reservations` table (FIFO queue per edition), assignment of a freed copy to the
+first in line, a 48-hour hold-shelf window, and a daily expiry job.
+
+## Monthly acquisition report
+
+`demand_events` is already being recorded, which is the part that cannot be
+reconstructed retroactively. Missing: the scheduled job and the report UI.
+
+Intended metrics:
+- turnover per edition (`loans ÷ copies`)
+- **holds-per-copy ratio** — the classic library trigger; above ~3, buy another copy
+- average queue wait
+- titles searched for that the library does not own, from `search_miss` and
+  `acquisition_suggestion` events
+- an AI-written narrative summary layered on top of figures computed in SQL —
+  never figures produced by the model
+
+## Fines
+
+`loans.fine_amount`, `loans.fine_status`, `users.blocked_until`,
+`users.suspension_reason` and `loan_policies.daily_fine_amount` are in place and
+unused. Missing: accrual job, payment recording, and the suspension workflow.
+
+## Additional metadata providers
+
+`MetadataProvider` is an interface with two implementations. ISBNdb and the
+Apify ISBN decoder plug in behind it, but must run in a **queued enrichment
+job**, never in the request path — Apify is an actor platform that has to be
+started and polled, which is unacceptable in front of a waiting librarian.
+
+## Semantic search
+
+Postgres full-text search covers the assessment. `pgvector` with embeddings over
+title, summary and tags would enable natural-language queries such as
+"books about the fall of the Roman empire" with no literal keyword match, plus
+content-based recommendations for readers.
+
+## Other
+
+- Two-factor authentication for administrators and librarians.
+- Overdue and hold-ready notification emails.
+- Dark mode — all tokens are already CSS variables, so this is a scoped change.
+- Multi-branch support (a `branches` table above `locations`).
+- Reader-facing loan history export.
+- Barcode support alongside QR for libraries with existing scanners.
+- A `works` table grouping editions of the same work, for "we have this in
+  another edition".
