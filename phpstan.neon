@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+    tmpDir: /tmp/phpstan
+
+    # Model properties are populated via Eloquent magic; ignore common noise.
+    ignoreErrors:
+
+    excludePaths:
+        - app/Providers/RouteServiceProvider.php (?)
