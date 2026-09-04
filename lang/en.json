@@ -143,5 +143,22 @@
     "common.open": "Open",
     "readers.verified": "Identity verified — :name can borrow now.",
     "errors.not_allowed": "This role is not allowed to move copies.",
-    "desk.identity_verified": "Identity verified — :name can borrow now."
+    "desk.identity_verified": "Identity verified — :name can borrow now.",
+    "status.available": "Available",
+    "status.on_loan": "On loan",
+    "status.reserved": "Reserved",
+    "status.in_repair": "In repair",
+    "status.lost": "Lost",
+    "status.at_reception": "At reception",
+    "status.in_transit": "In transit",
+    "status.pending_email": "Pending email",
+    "status.pending_identity": "Pending identity",
+    "status.active": "Active",
+    "status.suspended": "Suspended",
+    "status.closed": "Closed",
+    "status.overdue": "Overdue",
+    "status.deleted": "Closed",
+    "readers.passport": "Passport",
+    "common.status": "Status",
+    "public.loan_type_lbl": "Loan type"
 }

@@ -1,7 +1,9 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useTrans } from '../../i18n';
 
+const { t } = useTrans();
 const props = defineProps({
     member: Object,
     loans: Array,
@@ -9,6 +11,7 @@ const props = defineProps({
 
 const page = usePage();
 const flash = computed(() => page.props.flash ?? {});
+const firstName = computed(() => (props.member?.name ?? '').split(' ')[0]);
 </script>
 
 <template>
@@ -17,13 +20,13 @@ const flash = computed(() => page.props.flash ?? {});
             <div class="mx-auto flex max-w-4xl items-center justify-between">
                 <a href="/" class="font-serif text-lg font-medium text-ink">Bet-Sefer</a>
                 <nav class="flex items-center gap-4 text-sm">
-                    <a href="/account" class="font-medium text-buckram">Dashboard</a>
-                    <a href="/account/history" class="text-ink-muted hover:text-ink">History</a>
-                    <a href="/account/card" class="text-ink-muted hover:text-ink">Card</a>
-                    <a href="/" class="text-ink-muted hover:text-ink">Browse</a>
+                    <a href="/account" class="font-medium text-buckram">{{ t('nav.dashboard') }}</a>
+                    <a href="/account/history" class="text-ink-muted hover:text-ink">{{ t('nav.history') }}</a>
+                    <a href="/account/card" class="text-ink-muted hover:text-ink">{{ t('nav.card') }}</a>
+                    <a href="/" class="text-ink-muted hover:text-ink">{{ t('nav.catalog') }}</a>
                     <form method="post" action="/logout" class="inline">
                         <input type="hidden" name="_token" :value="page.props.csrf_token" />
-                        <button type="submit" class="text-ink-muted hover:text-ink">Sign out</button>
+                        <button type="submit" class="text-ink-muted hover:text-ink">{{ t('nav.sign_out') }}</button>
                     </form>
                 </nav>
             </div>
@@ -37,29 +40,27 @@ const flash = computed(() => page.props.flash ?? {});
 
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-[25px] font-medium text-ink">Hello, {{ member.name.split(' ')[0] }}</h1>
+                    <h1 class="text-[25px] font-medium text-ink">{{ t('account.hello', { name: firstName }) }}</h1>
                     <p class="mt-1 text-sm text-ink-muted">
-                        Member code
+                        {{ t('account.member_code') }}
                         <span class="font-mono text-ink">{{ member.code }}</span>
-                        · status <span class="capitalize">{{ member.status.replaceAll('_', ' ') }}</span>
+                        · {{ t('account.status') }} <span class="capitalize">{{ member.status.replaceAll('_', ' ') }}</span>
                     </p>
                 </div>
             </div>
 
             <section class="mt-8">
-                <h2 class="text-[20px] font-medium text-ink">Current loans</h2>
+                <h2 class="text-[20px] font-medium text-ink">{{ t('account.current_loans') }}</h2>
 
-                <p v-if="loans.length === 0" class="mt-3 text-sm text-ink-muted">
-                    No books out right now.
-                </p>
+                <p v-if="loans.length === 0" class="mt-3 text-sm text-ink-muted">{{ t('account.no_loans') }}</p>
 
                 <div v-else class="mt-3 overflow-hidden rounded-[10px] border border-rule bg-paper">
                     <table class="w-full text-left text-sm">
                         <thead class="border-b border-rule text-ink-muted">
                             <tr>
-                                <th class="px-4 py-2 font-medium">Title</th>
-                                <th class="px-4 py-2 font-medium">Copy</th>
-                                <th class="px-4 py-2 font-medium">Due</th>
+                                <th class="px-4 py-2 font-medium">{{ t('account.title') }}</th>
+                                <th class="px-4 py-2 font-medium">{{ t('account.copy') }}</th>
+                                <th class="px-4 py-2 font-medium">{{ t('account.due') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,7 +68,9 @@ const flash = computed(() => page.props.flash ?? {});
                                 <td class="px-4 py-2 font-serif text-ink">{{ loan.title }}</td>
                                 <td class="px-4 py-2 font-mono text-xs text-ink-muted">{{ loan.copy_code }}</td>
                                 <td class="px-4 py-2">
-                                    <span v-if="loan.overdue" class="rounded-md bg-lost-bg px-2 py-0.5 text-xs font-medium text-lost">Overdue · {{ new Date(loan.due_at).toLocaleDateString() }}</span>
+                                    <span v-if="loan.overdue" class="rounded-md bg-lost-bg px-2 py-0.5 text-xs font-medium text-lost">
+                                        {{ t('account.overdue', { date: new Date(loan.due_at).toLocaleDateString() }) }}
+                                    </span>
                                     <span v-else class="text-ink">{{ new Date(loan.due_at).toLocaleDateString() }}</span>
                                 </td>
                             </tr>

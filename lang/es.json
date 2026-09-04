@@ -143,5 +143,22 @@
     "common.open": "Abrir",
     "readers.verified": "Identidad verificada — :name ya puede pedir prestado.",
     "errors.not_allowed": "Este rol no tiene permiso para mover ejemplares.",
-    "desk.identity_verified": "Identidad verificada — :name ya puede pedir prestado."
+    "desk.identity_verified": "Identidad verificada — :name ya puede pedir prestado.",
+    "status.available": "Disponible",
+    "status.on_loan": "Prestado",
+    "status.reserved": "Reservado",
+    "status.in_repair": "En reparación",
+    "status.lost": "Perdido",
+    "status.at_reception": "En recepción",
+    "status.in_transit": "En tránsito",
+    "status.pending_email": "Correo pendiente",
+    "status.pending_identity": "Identidad pendiente",
+    "status.active": "Activo",
+    "status.suspended": "Suspendido",
+    "status.closed": "Cerrado",
+    "status.overdue": "Vencido",
+    "status.deleted": "Cerrado",
+    "readers.passport": "Pasaporte",
+    "common.status": "Estado",
+    "public.loan_type_lbl": "Tipo de préstamo"
 }

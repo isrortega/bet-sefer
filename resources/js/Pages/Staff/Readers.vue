@@ -1,7 +1,10 @@
 <script setup>
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import StatusChip from '../../Components/StatusChip.vue';
+import { useTrans } from '../../i18n';
 
+const { t } = useTrans();
 const props = defineProps({
     readers: Object,
     canVerify: Boolean,
@@ -16,18 +19,18 @@ const q = new URLSearchParams(window.location.search).get('q') ?? '';
     <div class="min-h-screen bg-shelf">
         <header class="border-b border-rule bg-paper px-4 py-3">
             <div class="mx-auto flex max-w-5xl items-center justify-between">
-                <a href="/" class="font-serif text-lg font-medium text-ink">Bet-Sefer · Staff</a>
-                <a href="/account" class="text-sm text-ink-muted hover:text-ink">My account</a>
+                <span class="font-serif text-lg font-medium text-ink">Bet-Sefer · Staff</span>
+                <a href="/account" class="text-sm text-ink-muted hover:text-ink">{{ t('nav.my_account') }}</a>
             </div>
         </header>
 
         <main class="mx-auto max-w-5xl px-4 py-8">
             <div class="flex items-center justify-between gap-4">
-                <h1 class="text-[25px] font-medium text-ink">Readers</h1>
+                <h1 class="text-[25px] font-medium text-ink">{{ t('readers.title') }}</h1>
                 <form method="get" action="/staff/readers" class="flex gap-2">
-                    <input name="q" :value="q" placeholder="Name, email or member code"
+                    <input name="q" :value="q" :placeholder="t('readers.search_ph')"
                            class="rounded-md border border-rule bg-paper px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brass" />
-                    <button type="submit" class="rounded-md bg-buckram px-3 py-2 text-sm font-medium text-paper">Search</button>
+                    <button type="submit" class="rounded-md bg-buckram px-3 py-2 text-sm font-medium text-paper">{{ t('readers.search') }}</button>
                 </form>
             </div>
 
@@ -40,11 +43,11 @@ const q = new URLSearchParams(window.location.search).get('q') ?? '';
                 <table class="w-full text-left text-sm">
                     <thead class="border-b border-rule text-ink-muted">
                         <tr>
-                            <th class="px-4 py-2 font-medium">Reader</th>
-                            <th class="px-4 py-2 font-medium">Member code</th>
-                            <th class="px-4 py-2 font-medium">Status</th>
-                            <th class="px-4 py-2 font-medium">Roles</th>
-                            <th class="px-4 py-2 text-right font-medium">Actions</th>
+                            <th class="px-4 py-2 font-medium">{{ t('readers.reader') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ t('readers.member') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ t('common.status') }}</th>
+                            <th class="px-4 py-2 font-medium">{{ t('readers.roles') }}</th>
+                            <th class="px-4 py-2 text-right font-medium">{{ t('readers.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -55,15 +58,14 @@ const q = new URLSearchParams(window.location.search).get('q') ?? '';
                             </td>
                             <td class="px-4 py-3 font-mono text-xs text-ink-muted">{{ reader.member_code }}</td>
                             <td class="px-4 py-3">
-                                <span v-if="reader.deleted" class="rounded-md bg-lost-bg px-2 py-0.5 text-xs font-medium text-lost">Closed</span>
-                                <span v-else class="rounded-md bg-reception-bg px-2 py-0.5 text-xs font-medium text-reception">{{ reader.status.replaceAll('_', ' ') }}</span>
+                                <StatusChip :status="reader.deleted ? 'deleted' : reader.status" />
                             </td>
                             <td class="px-4 py-3 text-xs text-ink-muted">{{ reader.roles.join(', ') }}</td>
                             <td class="px-4 py-3">
                                 <div v-if="reader.deleted">
                                     <form method="post" :action="`/staff/readers/${reader.ulid}/restore`">
                                         <input type="hidden" name="_token" :value="page.props.csrf_token" />
-                                        <button class="text-sm font-medium text-buckram hover:underline">Reopen</button>
+                                        <button class="text-sm font-medium text-buckram hover:underline">{{ t('readers.reopen') }}</button>
                                     </form>
                                 </div>
                                 <form v-else-if="canVerify && !reader.verified_at && reader.roles.includes('reader')"
@@ -72,11 +74,11 @@ const q = new URLSearchParams(window.location.search).get('q') ?? '';
                                     <select name="document_type" class="rounded border border-rule px-1.5 py-1 text-xs">
                                         <option value="CC">CC</option>
                                         <option value="CE">CE</option>
-                                        <option value="passport">Passport</option>
+                                        <option value="passport">{{ t('readers.passport') }}</option>
                                     </select>
-                                    <input name="document_number" required placeholder="ID number"
+                                    <input name="document_number" required :placeholder="t('readers.id_number')"
                                            class="rounded border border-rule px-2 py-1 text-xs" />
-                                    <button class="rounded bg-buckram px-2 py-1 text-xs font-medium text-paper">Verify</button>
+                                    <button class="rounded bg-buckram px-2 py-1 text-xs font-medium text-paper">{{ t('readers.verify') }}</button>
                                 </form>
                                 <span v-else class="text-xs text-ink-subtle">—</span>
                             </td>
