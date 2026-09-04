@@ -90,6 +90,14 @@ See `docs/09-roadmap.md`. The schema is ready for fines, reservations and
 metadata enrichment; the code is not. This build's cuts are listed there so the
 15-minute reviewer journey stays clean.
 
+## Production deploy
+
+Pushing to `main` deploys to `https://betsefer.appenlaweb.com`. The image is
+built on the VPS from `docker/prod/Dockerfile` and served behind the shared
+Traefik (`traefik-public` + `letsencrypt`). See `docs/08-infrastructure.md`
+for the full flow, one-time host setup and the backup cron. Deployment is
+frozen until the product is validated locally by the maintainer.
+
 ## Docs
 
 `CLAUDE.md` holds the architecture rules; `docs/` holds the design (domain
