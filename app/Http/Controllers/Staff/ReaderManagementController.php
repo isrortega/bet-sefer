@@ -44,7 +44,7 @@ class ReaderManagementController extends Controller
                 'deleted' => $user->deleted_at !== null,
                 'roles' => $user->roles->pluck('name'),
                 'verified_at' => $user->identity_verified_at?->toIso8601String(),
-            ])->values(),
+            ]),
             'canVerify' => $request->user()->can('users.verify_identity'),
         ]);
     }

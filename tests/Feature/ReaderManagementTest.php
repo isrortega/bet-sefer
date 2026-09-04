@@ -43,7 +43,9 @@ test('a librarian can list readers and verify an identity', function () {
     $this->actingAs($librarian)
         ->get('/staff/readers')
         ->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Staff/Readers'));
+        ->assertInertia(fn ($page) => $page
+            ->component('Staff/Readers')
+            ->has('readers.data', 2));
 
     $this->actingAs($librarian)
         ->post("/staff/readers/{$reader->ulid}/verify", [
