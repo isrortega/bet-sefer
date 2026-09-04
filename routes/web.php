@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Public\CatalogController;
 use App\Http\Controllers\Public\PublicPointController;
+use App\Http\Controllers\Staff\CatalogueController;
 use App\Http\Controllers\Staff\CategoryAdminController;
 use App\Http\Controllers\Staff\DemandController;
 use App\Http\Controllers\Staff\FrontDeskController;
@@ -88,6 +89,17 @@ Route::middleware(['auth'])->prefix('/staff')->name('staff.')->group(function ()
 
     Route::get('/policies', [PolicyAdminController::class, 'index'])->name('policies.index');
     Route::post('/policies/{policy}', [PolicyAdminController::class, 'update'])->name('policies.update');
+
+    Route::get('/catalog', [CatalogueController::class, 'index'])->name('catalog.index');
+    Route::get('/catalog/create', [CatalogueController::class, 'create'])->name('catalog.create');
+    Route::post('/catalog', [CatalogueController::class, 'store'])->name('catalog.store');
+    Route::get('/catalog/{edition}/edit', [CatalogueController::class, 'edit'])->name('catalog.edit');
+    Route::post('/catalog/{edition}/update', [CatalogueController::class, 'update'])->name('catalog.update');
+    Route::delete('/catalog/{edition}', [CatalogueController::class, 'destroy'])->name('catalog.destroy');
+    Route::post('/catalog/{edition}/copies', [CatalogueController::class, 'storeCopy'])->name('catalog.copies.store');
+
+    Route::post('/copies/{copy}/update', [CatalogueController::class, 'updateCopy'])->name('catalog.copies.update');
+    Route::delete('/copies/{copy}', [CatalogueController::class, 'destroyCopy'])->name('catalog.copies.destroy');
 });
 
 // Public information point (anonymous) — allow-list payloads only.
