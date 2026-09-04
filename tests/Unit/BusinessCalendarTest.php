@@ -10,6 +10,8 @@ uses(RefreshDatabase::class);
 
 function seedSchedule(): void
 {
+    config(['app.timezone' => 'America/Bogota']);
+
     foreach ([0, 1, 2, 3, 4] as $weekday) {
         LibraryHour::create(['weekday' => $weekday, 'opens_at' => '08:00', 'closes_at' => '18:00', 'is_closed' => false]);
     }
