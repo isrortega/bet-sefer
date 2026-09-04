@@ -7,23 +7,54 @@
 | Compose file | `docker-compose.yml` | `docker-compose.prod.yml` |
 | Dockerfile | `docker/dev/Dockerfile` | `docker/prod/Dockerfile` |
 | Host | localhost | Hetzner VPS |
-| URL | `http://localhost` | `https://betsefer.appenlaweb.com` |
-| Storage | MinIO | Cloudflare R2 |
+| URL | `http://betsefer.local` / `https://betsefer.local` | `https://betsefer.appenlaweb.com` |
+| Storage | Local disk (`storage/app/public`) | Local disk for the MVP; R2 in a later phase |
 | Mail | Mailpit | Brevo SMTP |
-| TLS | none | Caddy, automatic |
+| Proxy / TLS | Traefik (external, shared) | Traefik (external, shared) |
+
+Traefik runs **outside** this stack — it is an already-running service on the
+host (local machine and VPS). The app never ships its own proxy. Both
+environments attach the `web` container to the shared external Docker network
+`traefik_net` and let Traefik route to it. This is why nothing in the app
+publishes ports 80/443 to the host.
 
 ## Dev stack
 
 Services: `app` (PHP 8.4-FPM), `web` (Nginx), `postgres:17`, `redis:7`,
-`queue` (worker), `scheduler`, `mailpit`, `minio`, `vite`.
+`queue` (worker), `scheduler`, `mailpit`, `vite`.
 
-- Mailpit UI on `:8025`. **Do not publish port 1025 to the host** — SMTP stays
-  on the internal Docker network.
-- MinIO console on `:9001`, bucket `bet-sefer` created by an init container.
+- All of them share an internal network (`betsefer_internal`). `web` is also
+  attached to the external `traefik_net`.
+- Mailpit UI on host `:8025`. **Do not publish port 1025 to the host** — SMTP
+  stays on the internal Docker network.
 - Source mounted as a volume; Vite HMR enabled.
+- The Docker network `traefik_net` is created by the Traefik stack; this
+  project declares it as `external: true` and never creates it.
+- `betsefer.local` must already resolve to the host (local DNS / wildcard).
 
-A `Makefile` wraps everything: `up`, `down`, `fresh`, `test`, `check`, `shell`,
-`logs`.
+### Traefik labels (dev and prod use the same shape)
+
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.docker.network=traefik_net"
+  - "traefik.http.routers.betsefer.rule=Host(`betsefer.local`)"
+  - "traefik.http.routers.betsefer.entrypoints=websecure"
+  - "traefik.http.routers.betsefer.tls=true"
+  - "traefik.http.services.betsefer.loadbalancer.server.port=80"
+```
+
+Dev additionally routes a plain-HTTP router on the `web` entrypoint so daily
+work does not trip on the self-signed `websecure` certificate:
+
+```yaml
+  - "traefik.http.routers.betsefer-http.rule=Host(`betsefer.local`)"
+  - "traefik.http.routers.betsefer-http.entrypoints=web"
+```
+
+Because Traefik terminates TLS, Laravel must trust the proxy for
+`X-Forwarded-*`. `TRUSTED_PROXIES` is set to `*` in the containers (they are
+only reachable through the shared Traefik network).
 
 ## Production image
 
@@ -42,7 +73,7 @@ Then:
 - No dev dependencies, no source maps, no `.env` inside the image.
 
 Runtime services in prod: `app`, `web`, `postgres`, `redis`, `queue`,
-`scheduler`, `caddy`. **No Mailpit, no MinIO, no Vite.**
+`scheduler`. **No Mailpit, no Vite.** TLS is provided by the host Traefik.
 
 ## Environment variables
 
@@ -56,6 +87,8 @@ APP_TIMEZONE=America/Bogota
 APP_LOCALE=en
 APP_FALLBACK_LOCALE=en
 
+TRUSTED_PROXIES=*
+
 DB_CONNECTION=pgsql
 DB_HOST=postgres
 DB_PORT=5432
@@ -68,12 +101,13 @@ CACHE_STORE=redis
 QUEUE_CONNECTION=redis
 SESSION_DRIVER=database
 
-FILESYSTEM_DISK=r2
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET=bet-sefer
-R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
-R2_URL=
+FILESYSTEM_DISK=public        # MVP: local disk. R2 in a later phase.
+# R2 (later phase)
+# R2_ACCESS_KEY_ID=
+# R2_SECRET_ACCESS_KEY=
+# R2_BUCKET=bet-sefer
+# R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+# R2_URL=
 
 MAIL_MAILER=smtp
 MAIL_HOST=smtp-relay.brevo.com
@@ -83,24 +117,26 @@ MAIL_PASSWORD=          # Brevo SMTP key
 MAIL_FROM_ADDRESS=no-reply@appenlaweb.com   # must be a verified sender in Brevo
 MAIL_FROM_NAME="Bet-Sefer"
 
+# Google SSO is OPTIONAL. Email+password always works. Leave blank to hide SSO.
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=https://betsefer.appenlaweb.com/auth/google/callback
 
-GOOGLE_BOOKS_API_KEY=   # optional, raises the quota
+OPENROUTER_API_KEY=       # AI classification; blank = feature disabled
+AI_MODEL=deepseek/deepseek-v4-flash
+AI_TIMEOUT=6
+AI_CLASSIFICATION_ENABLED=true
+
+GOOGLE_BOOKS_API_KEY=     # optional, raises the quota
 OPEN_LIBRARY_TIMEOUT=3
 GOOGLE_BOOKS_TIMEOUT=3
 METADATA_TOTAL_BUDGET=8
-
-ANTHROPIC_API_KEY=
-AI_CLASSIFICATION_ENABLED=true
 ```
 
-R2 uses the S3 driver. Brevo notes: the SMTP username is the
-`7xxxxxx@smtp-brevo.com` string from the dashboard, not the account email, and
-the `From` address must exactly match a verified sender or Brevo rejects the
-message. Free tier is 300 mails/day. All mail is **queued**; if the mailer
-fails, no user flow breaks.
+Brevo notes: the SMTP username is the `7xxxxxx@smtp-brevo.com` string from the
+dashboard, not the account email, and the `From` address must exactly match a
+verified sender or Brevo rejects the message. Free tier is 300 mails/day. All
+mail is **queued**; if the mailer fails, no user flow breaks.
 
 ## Branching
 
@@ -111,6 +147,8 @@ fails, no user flow breaks.
 - A push to `main` is the sole signal that something should go live. There is
   no manual deploy path, no `workflow_dispatch`, and no way to ship from a
   feature branch. If it is not on `main`, it is not in production.
+- **Phase gate:** no push to `main` happens until the product is validated
+  locally by the maintainer (see `README.md`). Deployment is frozen until then.
 
 Protect `main` on GitHub: require the `ci` workflow to pass, disallow force
 pushes.
@@ -161,23 +199,26 @@ auditable path anyway.
 Secrets: `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `GHCR_TOKEN`, plus every runtime
 variable above.
 
-## Host setup (once)
+## Host setup (once, for the Traefik host)
 
 - DNS `A` record for `betsefer.appenlaweb.com` → VPS IP. Do this first; TLS
   cannot be issued until it resolves.
 - Docker and Compose plugin installed.
 - Firewall: 22, 80, 443 only.
-- Caddyfile reverse-proxying to the `web` container, automatic Let's Encrypt.
-- A nightly `pg_dump` to R2, retained 7 days.
+- A Traefik instance on the host with the `web` (80) and `websecure` (443)
+  entrypoints, the Docker provider on the shared `traefik_net` network, and a
+  Let's Encrypt `certResolver` (HTTP-01 or DNS-01). The app's labels reference
+  that `certResolver` in production; the exact name is confirmed at deploy time.
+- A nightly `pg_dump` to the host (R2 backup in a later phase), retained 7 days.
 
-## Deployment checklist
+## Deployment checklist (run at phase 10, after local validation)
 
 - [ ] DNS resolves
-- [ ] TLS certificate issued
+- [ ] TLS certificate issued through the host Traefik
 - [ ] `APP_DEBUG=false` confirmed in the running container
 - [ ] Migrations and seeders ran
 - [ ] The four demo accounts can log in
-- [ ] Google SSO round-trips
+- [ ] Google SSO round-trips (optional feature; verified only if credentials exist)
 - [ ] A QR code on a printed label opens the public page
 - [ ] A test mail arrives through Brevo
 - [ ] `/up` returns 200
