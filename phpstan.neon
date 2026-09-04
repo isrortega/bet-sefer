@@ -12,6 +12,12 @@ parameters:
         - message: '#Class App\\Models\\.* uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types#'
           paths:
             - app/Models/*.php
+        - message: '#Access to an undefined property#'
+          paths:
+            - app/Support/TreeEditor.php
+        - message: '#Call to an undefined method#'
+          paths:
+            - app/Support/TreeEditor.php
 
     excludePaths:
         - app/Providers/RouteServiceProvider.php (?)

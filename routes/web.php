@@ -8,10 +8,15 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Public\CatalogController;
 use App\Http\Controllers\Public\PublicPointController;
+use App\Http\Controllers\Staff\CategoryAdminController;
 use App\Http\Controllers\Staff\DemandController;
 use App\Http\Controllers\Staff\FrontDeskController;
+use App\Http\Controllers\Staff\LocationAdminController;
+use App\Http\Controllers\Staff\PolicyAdminController;
 use App\Http\Controllers\Staff\ReaderManagementController;
+use App\Http\Controllers\Staff\RoleController;
 use App\Http\Controllers\Staff\ShelvingController;
+use App\Http\Controllers\Staff\UserManagementController;
 use App\Http\Middleware\Noindex;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -60,6 +65,29 @@ Route::middleware(['auth'])->prefix('/staff')->name('staff.')->group(function ()
 
     Route::get('/demand', [DemandController::class, 'index'])->name('demand.index');
     Route::post('/demand/{demandEvent}/resolve', [DemandController::class, 'resolve'])->name('demand.resolve');
+
+    Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
+    Route::post('/users/{user}/update', [UserManagementController::class, 'update'])->name('users.update');
+    Route::post('/users/{user}/activate', [UserManagementController::class, 'activate'])->name('users.activate');
+    Route::post('/users/{user}/suspend', [UserManagementController::class, 'suspend'])->name('users.suspend');
+    Route::post('/users/{user}/close', [UserManagementController::class, 'close'])->name('users.close');
+    Route::post('/users/{ulid}/restore', [UserManagementController::class, 'restore'])->name('users.restore');
+
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+
+    Route::get('/categories', [CategoryAdminController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [CategoryAdminController::class, 'store'])->name('categories.store');
+    Route::post('/categories/{category}/update', [CategoryAdminController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryAdminController::class, 'destroy'])->name('categories.destroy');
+
+    Route::get('/locations', [LocationAdminController::class, 'index'])->name('locations.index');
+    Route::post('/locations', [LocationAdminController::class, 'store'])->name('locations.store');
+    Route::post('/locations/{location}/update', [LocationAdminController::class, 'update'])->name('locations.update');
+    Route::delete('/locations/{location}', [LocationAdminController::class, 'destroy'])->name('locations.destroy');
+
+    Route::get('/policies', [PolicyAdminController::class, 'index'])->name('policies.index');
+    Route::post('/policies/{policy}', [PolicyAdminController::class, 'update'])->name('policies.update');
 });
 
 // Public information point (anonymous) — allow-list payloads only.

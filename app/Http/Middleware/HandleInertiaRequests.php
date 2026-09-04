@@ -47,6 +47,10 @@ class HandleInertiaRequests extends Middleware
                 'shelving' => $user->can('copies.transition'),
                 'readers' => $user->can('users.manage') || $user->can('users.verify_identity'),
                 'demand' => $user->can('demand.manage'),
+                'users_admin' => $user->can('users.manage'),
+                'categories' => $user->can('taxonomy.manage'),
+                'locations' => $user->can('taxonomy.manage'),
+                'policies' => $user->can('policies.manage'),
             ],
         ];
     }
