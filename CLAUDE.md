@@ -18,14 +18,16 @@ unfinished one. When in doubt, cut scope and document it in `docs/09-roadmap.md`
 | Database | PostgreSQL 17 |
 | Cache / queue | Redis |
 | Frontend | Inertia + Vue 3 (Composition API) + Tailwind 4 |
-| Object storage | Cloudflare R2 (S3 driver); MinIO in dev |
+| Storage | Local disk (`public`) for the MVP; Cloudflare R2 in a later phase |
 | Mail | Brevo SMTP in prod; Mailpit in dev |
-| Auth | Laravel session auth + Google SSO (Socialite) |
+| Auth | Laravel session auth; Google SSO (Socialite) is optional (email+password always works) |
+| AI classification | OpenRouter, model configurable (`deepseek/deepseek-v4-flash`) |
+| Proxy | Traefik (local `betsefer.local` + prod `betsefer.appenlaweb.com`) |
 | Permissions | `spatie/laravel-permission` |
 | Audit | `spatie/laravel-activitylog` |
 | Tests | Pest |
 | Static analysis | Larastan (level 6+), Pint |
-| Deploy | Docker + GitHub Actions → Hetzner VPS, Caddy for TLS |
+| Deploy | Docker + GitHub Actions → Hetzner VPS, Traefik for TLS |
 
 Production URL: `https://betsefer.appenlaweb.com`
 Timezone: `America/Bogota`. Store UTC, present in local time.

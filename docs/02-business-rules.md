@@ -117,6 +117,18 @@ self-registration ──▶ pending_email
   Front-desk lookup queries the hash, never the encrypted column.
 - `member_code` is generated at registration and rendered as a QR on the
   reader's profile. Scanning it at the desk loads the reader.
+- Soft-deleted users keep `email`, `google_id` and `document_hash` occupied by
+  their plain unique indexes (there is **no** partial unique index on `users`).
+  Registration with an email that belongs to a soft-deleted user answers with a
+  specific message — "This account was closed. Contact the library
+  administrator." — never a generic "taken". The admin user list shows
+  soft-deleted users with a "closed" badge and a **restore** action. Restoring
+  sets `deleted_at = null` and resets `status` to `pending_identity`, so the
+  identity is re-verified in person before the account can borrow again.
+- The same rule applies when the librarian verifies identity and the submitted
+  document number collides with an existing (active or soft-deleted)
+  `document_hash`: the desk gets a conflict message instead of a silent unique
+  violation.
 
 ---
 

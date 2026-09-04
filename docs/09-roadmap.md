@@ -4,6 +4,22 @@ Everything here was designed for and deliberately deferred. The schema already
 carries the columns and states each item needs, so none of it requires a
 rewrite. This file doubles as the roadmap section of the README.
 
+## Delivery status
+
+- Runs locally through the shared Traefik at `betsefer.local` (HTTP + HTTPS).
+- **Production deployment is deliberately deferred** until the product is
+  validated locally by the maintainer. Nothing has been pushed to `main`.
+  When the gate opens, follow `docs/08-infrastructure.md`.
+
+## Object storage (Cloudflare R2)
+
+The MVP stores covers on the local `public` disk. R2 drops in later behind the
+same `Storage` facade via the S3 driver — the `.env.example` already carries the
+commented variables. Migration steps: add the S3 driver config, flip
+`FILESYSTEM_DISK=r2`, copy the existing local covers over, and re-run the
+`storage:link`-equivalent for private keys. Signed URLs are prepared for the
+follow-up; covers stay public.
+
 ## Reservations
 
 The `reserved` copy status and the `demand_events` table exist. Missing: a

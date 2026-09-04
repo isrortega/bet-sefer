@@ -66,10 +66,15 @@ authenticated, the same page renders more:
 
 One physical label, four experiences.
 
+Readers also have a small private self-service area at `/account` (active loans,
+loan history, their member QR card), reached from the same authenticated shell
+described in `docs/02-business-rules.md`. The catalogue pages are shared between
+anonymous visitors and readers; only `/account` and `/staff` are private.
+
 ## Codes and QR
 
-- Copy code format `BS-` + 7 Crockford base32 characters + 1 check digit.
-  Crockford excludes I, L, O and U, so it survives handwriting and OCR.
+- Copy code format `BS-` + 8 Crockford base32 characters (7 random + 1 check
+  digit). Crockford excludes I, L, O and U, so it survives handwriting and OCR.
 - Codes are **random, never sequential** — sequential codes let anyone enumerate
   the entire collection.
 - QR encodes the absolute URL `https://betsefer.appenlaweb.com/i/{code}`.
