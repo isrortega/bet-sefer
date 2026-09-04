@@ -93,4 +93,9 @@ class User extends Authenticatable
     {
         return $this->status === UserStatus::Active;
     }
+
+    public function getRouteKeyName(): string
+    {
+        return 'ulid';
+    }
 }
