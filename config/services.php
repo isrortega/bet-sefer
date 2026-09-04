@@ -35,4 +35,24 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    'openrouter' => [
+        'key' => env('OPENROUTER_API_KEY'),
+        'model' => env('AI_MODEL', 'deepseek/deepseek-v4-flash'),
+        'timeout' => (int) env('AI_TIMEOUT', 6),
+        'enabled' => env('AI_CLASSIFICATION_ENABLED', true) && env('OPENROUTER_API_KEY') !== null && env('OPENROUTER_API_KEY') !== '',
+    ],
+
+    'metadata' => [
+        'open_library_timeout' => (int) env('OPEN_LIBRARY_TIMEOUT', 3),
+        'google_books_timeout' => (int) env('GOOGLE_BOOKS_TIMEOUT', 3),
+        'total_budget' => (int) env('METADATA_TOTAL_BUDGET', 8),
+        'google_books_key' => env('GOOGLE_BOOKS_API_KEY'),
+    ],
+
 ];
