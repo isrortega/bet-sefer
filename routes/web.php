@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\Public\CatalogController;
 use App\Http\Controllers\Public\PublicPointController;
+use App\Http\Controllers\Staff\DemandController;
 use App\Http\Controllers\Staff\FrontDeskController;
 use App\Http\Controllers\Staff\ReaderManagementController;
 use App\Http\Controllers\Staff\ShelvingController;
@@ -56,6 +57,9 @@ Route::middleware(['auth'])->prefix('/staff')->name('staff.')->group(function ()
     Route::post('/readers/{user}/verify', [ReaderManagementController::class, 'verify'])->name('readers.verify');
     Route::post('/readers/{ulid}/restore', [ReaderManagementController::class, 'restore'])->name('readers.restore');
     Route::delete('/readers/{user}', [ReaderManagementController::class, 'destroy'])->name('readers.destroy');
+
+    Route::get('/demand', [DemandController::class, 'index'])->name('demand.index');
+    Route::post('/demand/{demandEvent}/resolve', [DemandController::class, 'resolve'])->name('demand.resolve');
 });
 
 // Public information point (anonymous) — allow-list payloads only.

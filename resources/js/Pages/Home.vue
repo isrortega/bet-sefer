@@ -52,6 +52,10 @@ const caps = computed(() => user.value?.capabilities ?? {});
                    class="rounded-md border border-rule bg-paper px-4 py-2 font-medium text-ink outline-none hover:bg-shelf focus:ring-2 focus:ring-brass">
                     {{ t('home.readers') }}
                 </a>
+                <a v-if="caps.demand" href="/staff/demand"
+                   class="rounded-md border border-rule bg-paper px-4 py-2 font-medium text-ink outline-none hover:bg-shelf focus:ring-2 focus:ring-brass">
+                    {{ t('home.demand') }}
+                </a>
                 <a href="/account"
                    class="rounded-md border border-rule bg-paper px-4 py-2 font-medium text-ink outline-none hover:bg-shelf focus:ring-2 focus:ring-brass">
                     {{ t('home.my_account') }}

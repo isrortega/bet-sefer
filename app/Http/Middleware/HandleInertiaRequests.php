@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
                 'front_desk' => $user->can('loans.create'),
                 'shelving' => $user->can('copies.transition'),
                 'readers' => $user->can('users.manage') || $user->can('users.verify_identity'),
+                'demand' => $user->can('demand.manage'),
             ],
         ];
     }

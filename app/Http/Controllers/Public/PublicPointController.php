@@ -7,6 +7,8 @@ use App\Http\Resources\PublicEditionResource;
 use App\Models\Copy;
 use App\Models\DemandEvent;
 use App\Models\Edition;
+use App\Services\Metadata\BookMetadata;
+use App\Services\Metadata\PublicIsbnLookupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,7 +44,7 @@ class PublicPointController extends Controller
     private function lookupByIsbn(Request $request, string $isbn): Response
     {
         if ($isbn === '') {
-            return Inertia::render('Public/Lookup', ['lookedUp' => null, 'isbn' => null, 'found' => null, 'suggested' => false]);
+            return Inertia::render('Public/Lookup', ['lookedUp' => null, 'isbn' => null, 'found' => null, 'suggested' => false, 'external' => null]);
         }
 
         $edition = Edition::where('isbn_13', $isbn)->orWhere('isbn_10', $isbn)->first();
@@ -55,6 +57,7 @@ class PublicPointController extends Controller
                 'isbn' => $isbn,
                 'found' => null,
                 'suggested' => false,
+                'external' => $this->externalPayload(app(PublicIsbnLookupService::class)->lookup($isbn)),
             ]);
         }
 
@@ -95,6 +98,26 @@ class PublicPointController extends Controller
         }
 
         return Inertia::render($component, $payload);
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function externalPayload(?BookMetadata $meta): ?array
+    {
+        if ($meta === null) {
+            return null;
+        }
+
+        return [
+            'title' => $meta->title,
+            'authors' => $meta->authors,
+            'subtitle' => $meta->subtitle,
+            'publisher' => $meta->publisher,
+            'published_year' => $meta->publishedYear,
+            'summary' => $meta->summary,
+            'cover' => $meta->coverUrl,
+        ];
     }
 
     private function record(Request $request, string $type, ?int $editionId, ?string $isbn): void
