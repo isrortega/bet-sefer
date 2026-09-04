@@ -160,5 +160,18 @@
     "status.deleted": "Cerrado",
     "readers.passport": "Pasaporte",
     "common.status": "Estado",
-    "public.loan_type_lbl": "Tipo de préstamo"
+    "public.loan_type_lbl": "Tipo de préstamo",
+    "public.external_hint": "Encontramos este título en catálogos públicos — aún no forma parte de esta biblioteca. Sugerirlo nos ayuda a decidir qué comprar.",
+    "home.demand": "Demanda y sugerencias",
+    "nav.demand": "Demanda",
+    "demand.title": "Sugerencias de adquisición",
+    "demand.empty": "Aún no hay sugerencias de adquisición.",
+    "demand.isbn": "ISBN",
+    "demand.when": "Sugerido",
+    "demand.count": "Sugerencias",
+    "demand.mark_handled": "Marcar como atendida",
+    "demand.handled": "Atendida",
+    "demand.stats_pending": "pendientes",
+    "demand.stats_total": "total",
+    "demand.handled_flash": "Sugerencia marcada como atendida."
 }

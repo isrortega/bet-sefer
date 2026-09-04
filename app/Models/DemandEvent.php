@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,12 +13,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $query_text
  * @property int|null $user_id
  * @property string|null $ip_hash
+ * @property Carbon|null $resolved_at
  */
 class DemandEvent extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['type', 'edition_id', 'isbn', 'query_text', 'user_id', 'ip_hash', 'created_at'];
+    protected $fillable = ['type', 'edition_id', 'isbn', 'query_text', 'user_id', 'ip_hash', 'created_at', 'resolved_at'];
 
-    protected $casts = ['created_at' => 'datetime'];
+    protected $casts = ['created_at' => 'datetime', 'resolved_at' => 'datetime'];
 }

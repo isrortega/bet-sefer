@@ -160,5 +160,18 @@
     "status.deleted": "Closed",
     "readers.passport": "Passport",
     "common.status": "Status",
-    "public.loan_type_lbl": "Loan type"
+    "public.loan_type_lbl": "Loan type",
+    "public.external_hint": "We found this title in public catalogues — it is not part of this library yet. Suggesting it helps us decide what to buy.",
+    "home.demand": "Demand & suggestions",
+    "nav.demand": "Demand",
+    "demand.title": "Acquisition suggestions",
+    "demand.empty": "No acquisition suggestions yet.",
+    "demand.isbn": "ISBN",
+    "demand.when": "Suggested",
+    "demand.count": "Suggestions",
+    "demand.mark_handled": "Mark as handled",
+    "demand.handled": "Handled",
+    "demand.stats_pending": "pending",
+    "demand.stats_total": "total",
+    "demand.handled_flash": "Suggestion marked as handled."
 }

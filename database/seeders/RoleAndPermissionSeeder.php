@@ -36,6 +36,7 @@ class RoleAndPermissionSeeder extends Seeder
             'policies.manage',
             'taxonomy.manage',
             'reports.view',
+            'demand.manage',
         ];
 
         foreach ($permissions as $permission) {

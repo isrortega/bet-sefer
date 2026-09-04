@@ -42,9 +42,16 @@ local-first delivery gate.
   not built.
 - **Password reset** and notification emails beyond account verification.
 - **Reservations** — see below (the `reserved` copy state stays unreachable).
-- **Public external ISBN lookup** when a title is not in the catalogue — the
-  suggestion flow exists; reaching out to live providers from the anonymous
-  surface is deferred to the next phase (see `docs/03`).
+
+## Shipped after the first delivery cut
+
+- **Public external ISBN lookup** — when an ISBN is not in the catalogue, the
+  lookup page queries Open Library (free) and, if a `GOOGLE_BOOKS_API_KEY` is
+  set, Google Books, cached 90 days in `metadata_lookups`; it shows the title
+  framed as external and still records suggestions. Never creates editions.
+- **Acquisition suggestions area** — `/staff/demand` (admin only,
+  `demand.manage`) lists `acquisition_suggestion` events, lets an admin mark
+  one as handled (`resolved_at`), and shows pending/total counts.
 
 ## Reservations
 
